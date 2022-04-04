@@ -464,7 +464,7 @@ class PPSD(object):
         self._len = int(self.sampling_rate * self.ppsd_length)
         
         #Define the taper window
-        if self.winparams = 'obspy-cosine':
+        if self.winparams == 'obspy-cosine':
             self.win = cosine_taper(self.nfft, 0.2)
         else:
             self.win = get_window(self.winparams, int(self.nfft))
@@ -1430,14 +1430,17 @@ class PPSD(object):
             out[key] = value
         np.savez_compressed(filename, **out)
 
-    def save_npz_min(self):
+    def save_npz_min(self, path='./', fmt='comp'):
         keys = ['P'] 
         keys += [f'{t.hour:02d}_{t.minute:02d}' for t in self.times_processed]
         intpsd = [self.psd_periods]
         intpsd += [np.round(psd).astype(int) for psd in self.psd_values]
         tau = self.times_processed[0]
-        output = f'{self.id}_{tau.year:04d}_{tau.month:02d}_{tau.month:02d}'
-        np.savez_compressed(output, **dict(zip(keys, intpsd)))
+        if fmt == 'comp':
+            output = f'{self.station}.{self.location}.{self.channel}_{tau.year:04d}_{tau.julday:03d}'
+        elif fmt == 'ext':
+            output = f'{self.station}.{self.location}.{self.channel}_{tau.year:04d}_{tau.month:02d}_{tau.month:02d}'
+        np.savez_compressed(path+output, **dict(zip(keys, intpsd)))
         
     @staticmethod
     def load_npz(filename, metadata=None, allow_pickle=False):
