@@ -1,57 +1,32 @@
 #Dummy exemple
-import obspy
-#import numpy as np
-from ppsd_dmg import PPSD
-#import matplotlib.pyplot as plt
-import datetime
-#import scipy
-import glob
+from utils import get_fargs, onestation_psd
+import warnings
+warnings.filterwarnings("ignore", message="'b'<Dip ")
+warnings.filterwarnings("ignore", message="'b'<Azimuth ")
+import logging
+from functools import partial
+import dask
+from dask.distributed import Client, progress
+import webbrowser
 
-
-sta = 'ABC'
-year = 2022
-jday = 19
-
-filenames = glob.glob(f'{sta}*{year}.{jday:03d}*') 
-
-#Prepare the data 
-st = obspy.read(filenames[0])
-stime = obspy.UTCDateTime(st.traces[0].stats.starttime.date.strftime('%Y-%m-%dT%H:%M:%S'))
-etime = obspy.UTCDateTime((st.traces[0].stats.starttime.date+datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S'))
-for filename in filenames[1:]:
-    st += obspy.read(filename)
-st.merge()
-if st.traces[0].stats.starttime.hour > 0:
-    try:
-        prev_day = glob.glob(f'{sta}*{year}.{(jday-1):03d}*') 
-        st += obspy.read(prev_day[-1])
-        st.merge()
-    except:
-        print('Initial gap: no data retrieved from the previous day.')
-        pass
-#This part is NOT error-proof!!!
-st.trim(starttime= stime,
-    endtime=etime,
-    pad=True,
-    )
-tr = st.traces[0]
-#Convert from nm/s**2 to m/s**2
-tr.data = tr.data*1e-9
-
-
-#Read the station metadata
-inv = obspy.read_inventory(f"{filenames[0].split('.')[0]}.xml")
-   
-
-#Compute the PSDs
-ppsd = PPSD(stats=tr.stats, metadata=inv, skip_on_gaps=False,
-                db_bins=(-200, -50, 1.), ppsd_length=90*60.0, overlap=0.5, winparams='hann',
-                special_handling="accelerometer", smoothing=False, period_smoothing_width_octaves=1.0,
-                subchunk_fraction = 0.25, subchunk_overlap_fraction = 0.75,
-                period_step_octaves=0.125, period_limits=None)
-
-
-ppsd.add(tr)
-
-#Save results
-ppsd.save_npz_min()
+if __name__ == '__main__':
+    #logging.basicConfig(level = logging.DEBUG)
+    client = Client(threads_per_worker=1, n_workers=32)
+    
+    webbrowser.open('http://localhost:8787/status')
+    
+    #Compute daily PSDs
+    jdaymin = 69
+    jdaymax = 104
+    fargs = get_fargs('wf_dayly_completeness.csv', list(range(jdaymin, jdaymax+1)))
+    wfpath = '/Archive4/RANdb_2/from_DPC/'
+    invpath = '/home/rt/RAN-noise/StationXML/'
+    outpath = '/home/rt/RAN-noise/test_out/'
+    
+    partial_onestation_psd = partial(onestation_psd, wfpath=wfpath, invpath=invpath, outpath=outpath)
+    
+    lazy_results = []
+    for args in fargs:
+        lazy_result = dask.delayed(partial_onestation_psd)(*args)
+        lazy_results.append(lazy_result)
+    dask.compute(*lazy_results)
