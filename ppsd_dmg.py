@@ -323,7 +323,7 @@ class PPSD(object):
 
     def __init__(self, stats, metadata, skip_on_gaps=False,
                  db_bins=(-200, -50, 1.), ppsd_length=3600.0, overlap=0.5, winparams='obspy-cosine',
-                 special_handling=None, smoothing=False, period_smoothing_width_octaves=1.0,
+                 special_handling=None, full_response_removal=True, smoothing=False, period_smoothing_width_octaves=1.0,
                  subchunk_fraction = 0.25, subchunk_overlap_fraction = 0.75,
                  period_step_octaves=0.125, period_limits=None,
                  **kwargs):  # @UnusedVariable
@@ -444,7 +444,8 @@ class PPSD(object):
             msg = "Unsupported value for 'special_handling' parameter: %s"
             msg = msg % self.special_handling
             raise ValueError(msg)
-
+        self.full_response_removal = full_response_removal
+        
         # save version numbers
         self.ppsd_version = self._CURRENT_VERSION
         self.obspy_version = __version__
@@ -991,22 +992,6 @@ class PPSD(object):
         if self.special_handling == "ringlaser":
             # in case of rotational data just remove sensitivity
             spec /= self.metadata['sensitivity'] ** 2   
-        # new special case for accelerometric data
-        elif self.special_handling == "accelerometer":
-            # in case of accelerometric data just remove sensitivity
-            
-            
-            response = self.metadata.get_response(tr.get_id(), tr.stats.starttime)
-            spec /= response._get_overall_sensitivity_and_gain(frequency=None, output='ACC')[1] ** 2
-            
-            #resp = self._get_response(tr)
-            #resp = resp[1:]
-            #resp = resp[::-1]
-            ## Now get the amplitude response (squared)
-            #respamp = np.absolute(resp * np.conjugate(resp))
-            #spec = spec / respamp
-            
-            
         # special_handling "hydrophone" does instrument correction same as
         # "normal" data
         else:
@@ -1021,18 +1006,31 @@ class PPSD(object):
                 warnings.warn(msg)
                 return False
 
-            resp = resp[1:]
-            resp = resp[::-1]
-            # Now get the amplitude response (squared)
-            respamp = np.absolute(resp * np.conjugate(resp))
-            # Make omega with the same conventions as spec
-            w = 2.0 * math.pi * _freq[1:]
-            w = w[::-1]
-            # Here we do the response removal
-            if self.special_handling in ("hydrophone", "infrasound"):
-                spec = spec / respamp
+            # new special case for accelerometric data
+            if self.special_handling == "accelerometer":
+                if self.full_response_removal == True:
+                    resp, _ = resp.get_evalresp_response(t_samp=self.delta, nfft=self.nfft, output="ACC")
+                    resp = resp[1:]
+                    resp = resp[::-1]
+                    # Now get the amplitude response (squared)
+                    respamp = np.absolute(resp * np.conjugate(resp))
+                    # Here we do the response removal
+                    spec = spec / respamp 
+                elif self.full_response_removal == False:
+                    spec /= response._get_overall_sensitivity_and_gain(frequency=None, output='ACC')[1] ** 2
             else:
-                spec = (w ** 2) * spec / respamp
+                resp = resp[1:]
+                resp = resp[::-1]
+                # Now get the amplitude response (squared)
+                respamp = np.absolute(resp * np.conjugate(resp))
+                # Make omega with the same conventions as spec
+                w = 2.0 * math.pi * _freq[1:]
+                w = w[::-1]
+                # Here we do the response removal
+                if self.special_handling in ("hydrophone", "infrasound"):
+                    spec = spec / respamp
+                else:
+                    spec = (w ** 2) * spec / respamp
 
         # avoid calculating log of zero
         idx = spec < dtiny
@@ -1308,7 +1306,10 @@ class PPSD(object):
         #   self._get_response = self._get_response_from_inventory
         # but that makes the object non-picklable
         if isinstance(self.metadata, Inventory):
-            return self._get_response_from_inventory(tr)
+            if self.special_handling=="accelerometer":
+                return self._get_response_from_DMGinventory(tr)
+            else:
+                return self._get_response_from_inventory(tr)
         elif isinstance(self.metadata, Parser):
             return self._get_response_from_parser(tr)
         elif isinstance(self.metadata, dict):
@@ -1323,8 +1324,22 @@ class PPSD(object):
         inventory = self.metadata
         response = inventory.get_response(self.id, tr.stats.starttime)
         resp, _ = response.get_evalresp_response(
-            t_samp=self.delta, nfft=self.nfft, output="ACC")
+            t_samp=self.delta, nfft=self.nfft, output="VEL")
         return resp
+        
+    def _get_response_from_DMGinventory(self, tr):
+        inventory = self.metadata
+        try:
+            response = inventory.get_response(self.id, tr.stats.starttime)
+        except:
+            modid = list(self.id)
+            if modid[-2] == 'G':
+                modid[-2] = 'N'
+            elif modid[-2] == 'N':
+                modid[-2] = 'G'
+            modid = "".join(modid)
+            response = inv.get_response(modid, tr.stats.starttime)
+        return response
 
     def _get_response_from_parser(self, tr):
         parser = self.metadata
@@ -1437,10 +1452,10 @@ class PPSD(object):
         intpsd += [np.round(psd).astype(int) for psd in self.psd_values]
         tau = self.times_processed[0]
         if fmt == 'comp':
-            output = f'{self.station}.{self.location}.{self.channel}_{tau.year:04d}_{tau.julday:03d}'
+            output = f'{self.station}.{self.channel}_{tau.year:04d}_{tau.julday:03d}'
         elif fmt == 'ext':
-            output = f'{self.station}.{self.location}.{self.channel}_{tau.year:04d}_{tau.month:02d}_{tau.month:02d}'
-        np.savez_compressed(path+output, **dict(zip(keys, intpsd)))
+            output = f'{self.id}_{tau.year:04d}_{tau.month:02d}_{tau.month:02d}'
+        np.savez_compressed(f'{path}/{output}', **dict(zip(keys, intpsd)))
         
     @staticmethod
     def load_npz(filename, metadata=None, allow_pickle=False):
@@ -2317,7 +2332,6 @@ def _check_npz_ppsd_version(ppsd, npzfile):
                "installation.").format(npzfile['ppsd_version'].item(),
                                        ppsd.ppsd_version)
         raise ObsPyException(msg)
-        
         
 if __name__ == '__main__':
     import doctest
