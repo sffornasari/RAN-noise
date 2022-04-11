@@ -1,6 +1,6 @@
 #Dummy exemple
 from utils import get_fargs, onestation_psd
-import warnings
+import warnings, os
 warnings.filterwarnings("ignore", message="'b'<Dip ")
 warnings.filterwarnings("ignore", message="'b'<Azimuth ")
 import logging
