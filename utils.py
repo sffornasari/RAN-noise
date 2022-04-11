@@ -89,7 +89,10 @@ def onestation_psd(sta, cha, year, jdaymin, jdaymax=None, wfpath='.', invpath='.
             ppsd.add(tr)
         
             #Save results
-            ppsd.save_npz_min(path=outpath)
+            ext_outpath = f'{outpath}/{year}/{jday:03d}/'
+            if not os.path.exists(ext_outpath):
+                os.makedirs(ext_outpath)
+            ppsd.save_npz_min(path=ext_outpath)
             logging.debug(f"Worker-{worknumber} -> {sta} processed.")
         except Exception as e:
             logging.debug(f"Worker-{worknumber} -> {sta} ppsd error: {e}")
