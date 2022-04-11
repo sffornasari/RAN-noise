@@ -22,7 +22,9 @@ if __name__ == '__main__':
     wfpath = '/Archive4/RANdb_2/from_DPC/'
     invpath = '/home/rt/RAN-noise/StationXML/'
     outpath = '/home/rt/RAN-noise/test_out/'
-    
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+        
     partial_onestation_psd = partial(onestation_psd, wfpath=wfpath, invpath=invpath, outpath=outpath)
     
     lazy_results = []
