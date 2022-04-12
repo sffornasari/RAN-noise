@@ -24,8 +24,8 @@ def onestation_psd(sta, cha, year, jdaymin, jdaymax=None, wfpath='.', invpath='.
     if not invfile:
         return
     inv = obspy.read_inventory(invfile[0])
-    for chan in inv._networks[0]._stations[0].channels:
-        chan._code = chan.code[0] + 'N' + chan.code[-1]
+#     for chan in inv._networks[0]._stations[0].channels:
+#         chan._code = chan.code[0] + 'N' + chan.code[-1]
         
     #For each day in the range yearjdaymin-yearjdaymax
     for jday in range(jdaymin, jdaymax+1):
