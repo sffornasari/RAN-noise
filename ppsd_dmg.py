@@ -1338,7 +1338,7 @@ class PPSD(object):
             elif modid[-2] == 'N':
                 modid[-2] = 'G'
             modid = "".join(modid)
-            response = inv.get_response(modid, tr.stats.starttime)
+            response = inventory.get_response(modid, tr.stats.starttime)
         return response
 
     def _get_response_from_parser(self, tr):
