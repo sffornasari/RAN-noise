@@ -1,5 +1,6 @@
 #Utility functions for PSDs computation
 import os
+import re
 import obspy
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ from multiprocessing import Pool, Queue, Process, Value, Manager, current_proces
 from functools import partial
 import time
 import logging
+from tqdm import tqdm
 
 def onestation_psd(sta, cha, year, jdaymin, jdaymax=None, wfpath='.', invpath='.', outpath='.', extsearch=False):
     worknumber = current_process().name
@@ -118,3 +120,69 @@ def get_fargs(csv, jdaylist=[]):
             if farg[3] in jdaylist:
                 fargs_r.append(farg)
         return fargs_r
+
+#Accelerometric noise models (Cauzzi and Clinton, 2013)
+def ALNM():
+    Pl = [0.01, 1., 10., 150.,]
+    lnm = [-135., -135., -130., -118.25,]
+    return Pl, lnm   
+def AHNM():
+    Ph = [0.01, 0.1, 0.22, 0.32, 0.80, 3.8, 4.6, 6.3, 7.1, 150.,]
+    hnm = [-91.5, -91.5, -97.41, -110.5, -120., -98., -96.5, -101., -105., -91.25]
+    return Ph, hnm
+
+############################
+#One-third-octave averaging#
+############################
+#Define 1/3 octave bands with nominal frequencies multiple of 1.0
+# P is the periods of the psds
+# octaveindex is a dictionary with nominal periods as keys ...
+# ... and index of the 1/3 octave band as values.
+def onethirdoctaves(P):
+    N = np.floor(3*np.log2(P[-1])-1/2)
+    fu = 1./2**(N/3+1/6)
+    ubf = 1/P[0]
+    f = 1/P
+    Pn = []
+    octaveindex = []
+    
+    while True:
+        fl = fu 
+        fn = fl*2**(1/6)
+        fu = fn*2**(1/6)
+        if fu >= ubf:
+            break
+        Pn.append(1/fn)
+        octaveindex.append(np.where((f >= fl) & (f <= fu)))
+    return Pn[::-1], octaveindex[::-1]
+#Compute the one-third-octave average for a specific PSD       
+def octavg(otoi, psd):
+    psdavg = [np.nan_to_num(np.mean(psd[idx]), nan=0.0) for idx in otoi]
+    return psdavg           
+#Compute the one-third-octave average for all PSDs in a given time window
+def oto_avg_psd():
+    inpath = '/Archive3/Machine_learning/RAN-noise/'
+    outpath = '/Archive3/Machine_learning/RAN-noise/otoavg/'
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+    
+    jdayranges = ['2020.105']
+    
+    files = []
+    for jdayrange in jdayranges:
+        year, jdays = jdayrange.split('.')
+        try:
+            jdaymin, jdaymax = jdays.split('-')
+        except:
+            jdaymin = jdays
+            jdaymax = jdays
+        for jday in range(int(jdaymin), int(jdaymax)+1):
+            files += glob.glob(f'{inpath}/{year}/{jday}/*.npz')
+    P = np.load(files[0])['P']
+    Pn, otoi = onethirdoctaves(P)
+    for f in tqdm(files):
+        otopsd = {'Pn': Pn}
+        sta, cha, year, jday = re.split(r'[/._]', f)[-5:-1]
+        npz = np.load(f)
+        otopsd.update({h: octavg(otoi=otoi, psd=npz[h]) for h in npz.files[1:]})
+        np.savez_compressed(f'{outpath}/{sta}.{cha}_{year}_{jday}', **otopsd)
