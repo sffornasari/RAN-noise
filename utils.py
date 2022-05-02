@@ -155,34 +155,21 @@ def onethirdoctaves(P):
         Pn.append(1/fn)
         octaveindex.append(np.where((f >= fl) & (f <= fu)))
     return Pn[::-1], octaveindex[::-1]
-#Compute the one-third-octave average for a specific PSD       
+
+#Compute the one-third-octave average for a specific PSD
 def octavg(otoi, psd):
     psdavg = [np.nan_to_num(np.mean(psd[idx]), nan=0.0) for idx in otoi]
-    return psdavg           
-#Compute the one-third-octave average for all PSDs in a given time window
-def oto_avg_psd():
-    inpath = '/Archive3/Machine_learning/RAN-noise/'
-    outpath = '/Archive3/Machine_learning/RAN-noise/otoavg/'
-    if not os.path.exists(outpath):
-        os.makedirs(outpath)
+    return psdavg
     
-    jdayranges = ['2020.105']
-    
-    files = []
-    for jdayrange in jdayranges:
-        year, jdays = jdayrange.split('.')
-        try:
-            jdaymin, jdaymax = jdays.split('-')
-        except:
-            jdaymin = jdays
-            jdaymax = jdays
-        for jday in range(int(jdaymin), int(jdaymax)+1):
-            files += glob.glob(f'{inpath}/{year}/{jday}/*.npz')
-    P = np.load(files[0])['P']
-    Pn, otoi = onethirdoctaves(P)
-    for f in tqdm(files):
-        otopsd = {'Pn': Pn}
+def otodask(f, outpath):
+    try:
         sta, cha, year, jday = re.split(r'[/._]', f)[-5:-1]
         npz = np.load(f)
+        P = npz['P']
+        Pn, otoi = onethirdoctaves(P)
+        otopsd = {'Pn': Pn}
         otopsd.update({h: octavg(otoi=otoi, psd=npz[h]) for h in npz.files[1:]})
-        np.savez_compressed(f'{outpath}/{sta}.{cha}_{year}_{jday}', **otopsd)
+        np.savez_compressed(f'{outpath}/{year}/{int(jday):03d}/{sta}.{cha}_{year}_{int(jday):03d}', **otopsd)
+    except Exception as e:
+        print(e)
+    return 
