@@ -18,7 +18,7 @@ if __name__ == '__main__':
     #Compute daily PSDs
     jdaymin = 69
     jdaymax = 104
-    fargs = get_fargs('wf_dayly_completeness.csv', list(range(jdaymin, jdaymax+1)))
+    fargs = get_fargs(f'wf_dayly_completeness_{year}.csv', list(range(jdaymin, jdaymax+1)))
     wfpath = '/Archive4/RANdb_2/from_DPC/'
     invpath = '/home/rt/RAN-noise/StationXML/'
     outpath = '/home/rt/RAN-noise/test_out/'
@@ -32,3 +32,5 @@ if __name__ == '__main__':
         lazy_result = dask.delayed(partial_onestation_psd)(*args)
         lazy_results.append(lazy_result)
     dask.compute(*lazy_results)
+    time.sleep(120)
+    client.close()
