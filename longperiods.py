@@ -25,8 +25,8 @@ days = glob.glob('../DBs/sens_only/' + syear + '/*')
 0.25= 13
 0.1= 9
 '''
-s_inxs = [9,13,16,19,22,26]
-s_strs = ['0.1','0.25','0.5','1','2','5']
+s_inxs = [31,34,38]
+s_strs = ['16','32','80.6']
 # Result List
 res_list = []
 for period, s_inx in zip(s_strs,s_inxs):
@@ -63,7 +63,7 @@ for period, s_inx in zip(s_strs,s_inxs):
 		
 
 res = pd.DataFrame(res_list,columns=['STLA','STLO','STNAME','PERIOD','VAL','LABEL'])
-res.to_csv('../DBs/weekday_weekend_' + syear + '.csv',index=False)
+res.to_csv('../DBs/longperiod_' + syear + '.csv',index=False)
 # Drop Outliears
 # res = res[~res['STNAME'].isin(['CES','SLD'])]
 

@@ -5,7 +5,7 @@ def average(lst):
 	return sum(lst)/len(lst)
 
 # Load DB
-year = '2020'
+year = '2022'
 path = '../Figures/Dif_Day_Night/'
 if os.path.exists(os.path.join(path,year)) == False:
 	os.mkdir(os.path.join(path,year))

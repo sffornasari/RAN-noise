@@ -20,7 +20,7 @@ def minmax(data1,data2):
 def draw_map(stname,stlos,stlas,data,plttype,time,year,period,vmin,vmax):
 	# Create a Stamen terrain background instance.
 	stamen_terrain = cimgt.Stamen('terrain-background')
-	fig = plt.figure()
+	fig = plt.figure(figsize=(8,6))
 	# Create a GeoAxes in the tile's projection.
 	ax = fig.add_subplot(1, 1, 1, projection=stamen_terrain.crs)
 	# Limit the extent of the map to a small longitude/latitude range.
@@ -30,12 +30,13 @@ def draw_map(stname,stlos,stlas,data,plttype,time,year,period,vmin,vmax):
 	# Add data points
 	day_map = ax.scatter(stlos, stlas, marker='^', c=data,
 	 s=6, alpha=0.7, transform=ccrs.Geodetic(), 
-	 cmap='seismic', vmin=vmin, vmax=vmax)
+	 cmap='jet', vmax=vmax) #seismic   vmin=vmin, 
 
 	# for i, txt in enumerate(stname):
 	# 	ax.text(x=stlos[i],y=stlas[i],s=txt, transform=ccrs.Geodetic())
 	# Colorbar
 	fig.colorbar(day_map)
+
 	# Use the cartopy interface to create a matplotlib transform object
 	# for the Geodetic coordinate system. We will use this along with
 	# matplotlib's offset_copy function to define a coordinate system which
@@ -44,20 +45,20 @@ def draw_map(stname,stlos,stlas,data,plttype,time,year,period,vmin,vmax):
 	text_transform = offset_copy(geodetic_transform, units='dots', x=-25)
 	# Show Map
 	# plt.show()
-	ax.set_title(time + '\n' + period)
+	# ax.set_title(time + '\n' + period)
 	# plt.show()
 	if plttype == 'Residual':
-		if year not in os.listdir('../Figures/Weekday_Weekend'):
-			os.mkdir('../Figures/Weekday_Weekend/' + year)
-		if time not in os.listdir('../Figures/Weekday_Weekend/' + year):
-			os.mkdir('../Figures/Weekday_Weekend/' + year + '/' + time)
-		plt.savefig('../Figures/Weekday_Weekend/' + year + '/' + time + '/' + year + '_' + period + '.png',dpi=300)
+		if year not in os.listdir('../Figures/Weekday_Weekend_Residual'):
+			os.mkdir('../Figures/Weekday_Weekend_Residual/' + year)
+		if time not in os.listdir('../Figures/Weekday_Weekend_Residual/' + year):
+			os.mkdir('../Figures/Weekday_Weekend_Residual/' + year + '/' + time)
+		plt.savefig('../Figures/Weekday_Weekend_Residual/' + year + '/' + time + '/' + year + '_' + period.replace('.','_') + '.png',dpi=300, bbox_inches='tight')
 	elif plttype == 'General':
 		if year not in os.listdir('../Figures/Weekday_Weekend'):
 			os.mkdir('../Figures/Weekday_Weekend/' + year)
 		if time not in os.listdir('../Figures/Weekday_Weekend/' + year):
 			os.mkdir('../Figures/Weekday_Weekend/' + year + '/' + time)
-		plt.savefig('../Figures/Weekday_Weekend/' + year + '/' + time + '/' + year + '_' + period + '.png',dpi=300)
+		plt.savefig('../Figures/Weekday_Weekend/' + year + '/' + time + '/' + year + '_' + period.replace('.','_') + '.png',dpi=300, bbox_inches='tight')
 	plt.close('all')
 	return
 
@@ -65,9 +66,16 @@ def draw_map(stname,stlos,stlas,data,plttype,time,year,period,vmin,vmax):
 dpc_db = pd.read_csv('../DBs/dpc.csv')
 
 # List Results
-syear = '2020'
-iyear = int(syear)
-days = glob.glob('../DBs/sens_only/' + syear + '/*')
+syear1 = '2019'
+# iyear = int(syear)
+days = glob.glob('../DBs/sens_only/' + syear1 + '/*')
+
+syear2 = '2022'
+# iyear = int(syear)
+days += glob.glob('../DBs/sens_only/' + syear2 + '/*')
+
+
+syear = syear1 + syear2
 
 
 '''
@@ -95,10 +103,12 @@ for period, s_inx, vmin, vmax in zip(s_strs,s_inxs, vmins, vmaxs):
 		npzs = glob.glob(day_date + '/*')
 		for npz in npzs:
 			try:
+			# if True:
 				# jday = npz.split('/')[-1].split('_')[-1].split('.')[0]
 				# ijday = int(jday)
 				fmt = '%Y %j'
-				d = datetime.strptime(syear + ' ' + sday, fmt)
+				ssyear = npz.split('/')[-3]
+				d = datetime.strptime(ssyear + ' ' + sday, fmt)
 				sta = npz.split('/')[-1].split('.')[0]
 
 				res = np.load(npz)
@@ -109,7 +119,7 @@ for period, s_inx, vmin, vmax in zip(s_strs,s_inxs, vmins, vmaxs):
 				stlo = dpc_db['site.lon'][st_inx]
 				
 				# Weekend
-				weekend_vals = []; weekday_vals = []; 
+				weekend_vals = []; weekday_vals = []; whole_week = []
 				if d.weekday() > 4:
 					for trange in keys[1:]:
 						weekend_vals.append(res[trange][s_inx])
@@ -119,29 +129,53 @@ for period, s_inx, vmin, vmax in zip(s_strs,s_inxs, vmins, vmaxs):
 					for trange in keys[1:]:
 						weekday_vals.append(res[trange][s_inx])
 					res_list.append([stla,stlo,sta,average(weekday_vals),'Weekday'])
+				# Whole Week
+				for trange in keys[1:]:
+					whole_week.append(res[trange][s_inx])
+				res_list.append([stla,stlo,sta,average(whole_week),'Whole Week'])
+
 			except:
+				print('Error:',npz)
 				continue
 		
 
 	res = pd.DataFrame(res_list,columns=['STLA','STLO','STNAME','VAL','LABEL'])
 	# Drop Outliears
 	res = res[~res['STNAME'].isin(['CES','SLD'])]
-
 	weekday = res[res.LABEL == 'Weekday']
 	weekday = weekday.groupby(['STNAME','STLA','STLO'], as_index=False, sort=False)['VAL'].mean()
 	weekend = res[res.LABEL == 'Weekend']
 	weekend = weekend.groupby(['STNAME','STLA','STLO'], as_index=False, sort=False)['VAL'].mean()
+	wholeweek = res[res.LABEL == 'Whole Week']
+	wholeweek = wholeweek.groupby(['STNAME','STLA','STLO'], as_index=False, sort=False)['VAL'].mean()
 
 	plttype = 'General'
 	if plttype == 'Residual':
 		median_weekday = np.nanmedian(weekday.VAL)
 		median_weekend = np.nanmedian(weekend.VAL)
+		median_wholeweek = np.nanmedian(wholeweek.VAL)
 		median_weekday_vals = weekday.VAL-median_weekday
 		median_weekend_vals = weekend.VAL-median_weekend
-		# vmin, vmax = minmax(median_weekday_vals,median_weekend_vals)
-		draw_map(weekday.STNAME,weekday.STLO,weekday.STLA,median_weekday_vals,plttype,'Weekday',syear,period,vmin=vmin,vmax=vmax)
-		draw_map(weekend.STNAME,weekend.STLO,weekend.STLA,median_weekend_vals,plttype,'Weekend',syear,period,vmin=vmin,vmax=vmax)
+		median_wholeweek_vals=wholeweek.VAL-median_wholeweek
+		# vmin, vmax = minmax(median_weekday_vals,median_weekday_vals)
+		vmax = np.percentile(median_weekday_vals, 95)
+		draw_map(weekday.STNAME,weekday.STLO,weekday.STLA,median_weekday_vals,plttype,'Weekday',syear,period,vmin=-vmax,vmax=vmax)
+		# vmin, vmax = minmax(median_weekend_vals,median_weekend_vals)
+		vmax = np.percentile(median_weekend_vals, 95)
+		draw_map(weekend.STNAME,weekend.STLO,weekend.STLA,median_weekend_vals,plttype,'Weekend',syear,period,vmin=-vmax,vmax=vmax)
+		# vmin, vmax = minmax(median_wholeweek_vals,median_wholeweek_vals)
+		vmax = np.percentile(median_wholeweek_vals, 95)
+		draw_map(wholeweek.STNAME,wholeweek.STLO,wholeweek.STLA,median_wholeweek_vals,plttype,'Whole Week',syear,period,vmin=-vmax,vmax=vmax)
+		# Weekday Weekend Dif
+		vmax = np.percentile(weekday.VAL-weekend.VAL, 95)
+		draw_map(wholeweek.STNAME,wholeweek.STLO,wholeweek.STLA,weekday.VAL-weekend.VAL,plttype,'Weekday-Weekend',syear,period,vmin=-vmax,vmax=vmax)
 	elif plttype == 'General':
-		# vmin, vmax = minmax(weekday.VAL,weekend.VAL)
-		draw_map(weekday.STNAME,weekday.STLO,weekday.STLA,weekday.VAL,plttype,'Weekday',syear,period,vmin=vmin,vmax=vmax)
-		draw_map(weekend.STNAME,weekend.STLO,weekend.STLA,weekend.VAL,plttype,'Weekend',syear,period,vmin=vmin,vmax=vmax)
+		# vmin, vmax = minmax(weekday.VAL,weekday.VAL)
+		vmax = np.nanpercentile(weekday.VAL, 95)
+		draw_map(weekday.STNAME,weekday.STLO,weekday.STLA,weekday.VAL,plttype,'Weekday',syear,period,vmin=vmax,vmax=vmax)
+		# vmin, vmax = minmax(weekend.VAL,weekend.VAL)
+		vmax = np.nanpercentile(weekend.VAL, 95)
+		draw_map(weekend.STNAME,weekend.STLO,weekend.STLA,weekend.VAL,plttype,'Weekend',syear,period,vmin=vmax,vmax=vmax)
+		# vmin, vmax = minmax(wholeweek.VAL,wholeweek.VAL)
+		vmax = np.nanpercentile(wholeweek.VAL, 95)
+		draw_map(wholeweek.STNAME,wholeweek.STLO,wholeweek.STLA,wholeweek.VAL,plttype,'Whole Week',syear,period,vmin=vmax,vmax=vmax)

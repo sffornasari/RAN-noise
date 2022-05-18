@@ -20,7 +20,7 @@ def minmax(data1,data2):
 def draw_map(stname,stlos,stlas,data,plttype,time,year,period,vmin,vmax):
 	# Create a Stamen terrain background instance.
 	stamen_terrain = cimgt.Stamen('terrain-background')
-	fig = plt.figure()
+	fig = plt.figure(figsize=(8,6))
 	# Create a GeoAxes in the tile's projection.
 	ax = fig.add_subplot(1, 1, 1, projection=stamen_terrain.crs)
 	# Limit the extent of the map to a small longitude/latitude range.
@@ -30,7 +30,7 @@ def draw_map(stname,stlos,stlas,data,plttype,time,year,period,vmin,vmax):
 	# Add data points
 	day_map = ax.scatter(stlos, stlas, marker='^', c=data,
 	 s=6, alpha=0.7, transform=ccrs.Geodetic(), 
-	 cmap='seismic', vmin=vmin, vmax=vmax)
+	 cmap='seismic', vmax=vmax) #vmin=vmin, 
 	# Colorbar
 	fig.colorbar(day_map)
 	# Use the cartopy interface to create a matplotlib transform object
@@ -47,22 +47,29 @@ def draw_map(stname,stlos,stlas,data,plttype,time,year,period,vmin,vmax):
 			os.mkdir('../Figures/Day_Night_Residual/' + year)
 		if time not in os.listdir('../Figures/Day_Night_Residual/' + year):
 			os.mkdir('../Figures/Day_Night_Residual/' + year + '/' + time)
-		plt.savefig('../Figures/Day_Night_Residual/' + year + '/' + time + '/' + year + '_' + period + '.png',dpi=300)
+		plt.savefig('../Figures/Day_Night_Residual/' + year + '/' + time + '/' + time + '_' + year + '_' + period.replace('.','_') + '.png',dpi=300, bbox_inches='tight')
 	elif plttype == 'General':
 		if year not in os.listdir('../Figures/Day_Night_General'):
 			os.mkdir('../Figures/Day_Night_General/' + year)
 		if time not in os.listdir('../Figures/Day_Night_General/' + year):
 			os.mkdir('../Figures/Day_Night_General/' + year + '/' + time)
-		plt.savefig('../Figures/Day_Night_General/' + year + '/' + time + '/' + year + '_' + period + '.png',dpi=300)
+		plt.savefig('../Figures/Day_Night_General/' + year + '/' + time + '/' + time + '_' + year + '_' + period.replace('.','_') + '.png',dpi=300, bbox_inches='tight')
 	plt.close('all')
 	return
 
 dpc_db = pd.read_csv('../DBs/dpc.csv')
 
 # List Results
-syear = '2020'
-iyear = int(syear)
-days = glob.glob('../DBs/sens_only/' + syear + '/*')
+syear1 = '2019'
+# iyear = int(syear)
+days = glob.glob('../DBs/sens_only/' + syear1 + '/*')
+
+syear2 = '2022'
+# iyear = int(syear)
+days += glob.glob('../DBs/sens_only/' + syear2 + '/*')
+
+
+syear = syear1 + syear2
 '''
 1s = 19
 2s = 22
@@ -129,10 +136,19 @@ for period, s_inx, vmin, vmax in zip(s_strs,s_inxs, vmins, vmaxs):
 		median_night = np.nanmedian(night.VAL)
 		median_day_vals = day.VAL-median_day
 		median_night_vals = night.VAL-median_night
-		# vmin, vmax = minmax(median_day_vals,median_night_vals)
-		draw_map(night.STNAME,night.STLO,night.STLA,median_night_vals,plttype,'Night',syear,period,vmin=vmin,vmax=vmax)
-		draw_map(day.STNAME,day.STLO,day.STLA,median_day_vals,plttype,'Day',syear,period,vmin=vmin,vmax=vmax)
+		# vmin, vmax = minmax(median_day_vals,median_day_vals)
+		vmax = np.percentile(median_day_vals, 95)
+		draw_map(day.STNAME,day.STLO,day.STLA,median_day_vals,plttype,'Day',syear,period,vmin=-vmax,vmax=vmax)
+		# vmin, vmax = minmax(median_night_vals,median_night_vals)
+		vmax = np.percentile(median_night_vals, 95)
+		draw_map(night.STNAME,night.STLO,night.STLA,median_night_vals,plttype,'Night',syear,period,vmin=-vmax,vmax=vmax)
+		vmax = np.percentile(day.VAL-night.VAL, 95)
+		draw_map(night.STNAME,night.STLO,night.STLA,day.VAL-night.VAL,plttype,'Night',syear,period,vmin=-vmax,vmax=vmax)
 	elif plttype == 'General':
+		# vmin, vmax = minmax(day.VAL,day.VAL)
+		vmax = np.nanpercentile(day.VAL, 95)
+		draw_map(day.STNAME,day.STLO,day.STLA,day.VAL,plttype,'Day',syear,period,vmin=-vmax,vmax=vmax)
 		# vmin, vmax = minmax(night.VAL,night.VAL)
-		draw_map(night.STNAME,night.STLO,night.STLA,night.VAL,plttype,'Night',syear,period,vmin=vmin,vmax=vmax)
-		draw_map(day.STNAME,day.STLO,day.STLA,day.VAL,plttype,'Day',syear,period,vmin=vmin,vmax=vmax)
+		vmax = np.nanpercentile(night.VAL, 95)
+		draw_map(night.STNAME,night.STLO,night.STLA,night.VAL,plttype,'Night',syear,period,vmin=-vmax,vmax=vmax)
+		

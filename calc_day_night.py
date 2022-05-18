@@ -15,7 +15,7 @@ def average(lst):
 dpc_db = pd.read_csv('../DBs/dpc.csv')
 
 # List Results
-syear = '2019'
+syear = '2022'
 iyear = int(syear)
 days = glob.glob('../DBs/sens_only/' + syear + '/*')
 

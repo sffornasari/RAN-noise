@@ -16,7 +16,7 @@ def AHNM():
     return Ph, hnm
 
 # List Results
-syear = '2019'
+syear = '2022'
 days = glob.glob('../DBs/sens_only/' + syear + '/*')
 
 pl,lnm = ALNM()
@@ -52,6 +52,6 @@ for day in progress(days):
 				os.mkdir(os.path.join('../Figures/Hourly_Average',year))
 			if jday not in os.listdir(os.path.join('../Figures/Hourly_Average',year)):
 				os.mkdir(os.path.join('../Figures/Hourly_Average',year,jday))
-			plt.savefig(os.path.join('../Figures/Hourly_Average',year,jday,sta + '.png'))
+			plt.savefig(os.path.join('../Figures/Hourly_Average',year,jday,sta + '.png'), bbox_inches='tight')
 			# plt.show()
 			plt.close('all')

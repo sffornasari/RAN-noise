@@ -8,10 +8,10 @@ from progressbar import ProgressBar
 def average(lst):
 	return sum(lst)/len(lst)
 
-def draw_map(stname,stlos,stlas,data,time,period,vmin,vmax):
+def draw_map(stname,stlos,stlas,data,time,period,vmin,vmax,foldername):
 	# Create a Stamen terrain background instance.
 	stamen_terrain = cimgt.Stamen('terrain-background')
-	fig = plt.figure()
+	fig = plt.figure(figsize=(8,6))
 	# Create a GeoAxes in the tile's projection.
 	ax = fig.add_subplot(1, 1, 1, projection=stamen_terrain.crs)
 	# Limit the extent of the map to a small longitude/latitude range.
@@ -34,17 +34,23 @@ def draw_map(stname,stlos,stlas,data,time,period,vmin,vmax):
 	# plt.show()
 	ax.set_title(time + '\n' + period)
 	# plt.show()
-	plt.savefig('../Figures/Day_Night_20192020/' + time + '/' + period + '.png',dpi=300)
+	if 'Day_Night_' + foldername not in os.listdir('../Figures/'):
+		os.mkdir('../Figures/' + 'Day_Night_' + foldername)
+	if time not in os.listdir('../Figures/' + 'Day_Night_' + foldername):
+		os.mkdir('../Figures/' + 'Day_Night_' + foldername + '/' + time)
+	plt.savefig('../Figures/Day_Night_' + foldername + '/' + time + '/' + period + '.png',dpi=300, bbox_inches='tight')
 	plt.close('all')
 	return
 
-db_2019 = pd.read_csv('../DBs/day_night_2019.csv')
-db_2020 = pd.read_csv('../DBs/day_night_2020.csv')
+year1 = '2022'
+year2 = '2020'
+db_2019 = pd.read_csv('../DBs/day_night_' + year1 + '.csv')
+db_2020 = pd.read_csv('../DBs/day_night_' + year2 + '.csv')
 
-# Weekday
+# Day
 day_2019 = db_2019[db_2019.LABEL == 'Day']
 day_2020 = db_2020[db_2020.LABEL == 'Day']
-# Weekend
+# Night
 night_2019 = db_2019[db_2019.LABEL == 'Night']
 night_2020 = db_2020[db_2020.LABEL == 'Night']
 
@@ -59,16 +65,16 @@ for period in db_2019.PERIOD.unique():
 	for sta in progress(common_stas):
 		# Day
 		day_av_2019 = average(day_2019[(day_2019.STNAME == sta) & (day_2019.PERIOD == period)].VAL)
-		# day_av_2020 = average(day_2020[(day_2020.STNAME == sta) & (day_2020.PERIOD == period)].VAL)
-		# day_av_dif = day_av_2019 - day_av_2020
+		day_av_2020 = average(day_2020[(day_2020.STNAME == sta) & (day_2020.PERIOD == period)].VAL)
+		day_av_dif = day_av_2019 - day_av_2020
 		stla = day_2019[day_2019.STNAME == sta]['STLA'].unique()[0]
 		stlo = day_2019[day_2019.STNAME == sta]['STLO'].unique()[0]
-		# res_list_day.append([stla,stlo,sta,day_av_dif,'Day'])
-		# # Night
-		# night_av_2019 = average(night_2019[(night_2019.STNAME == sta) & (night_2019.PERIOD == period)].VAL)
-		# night_av_2020 = average(night_2020[(night_2020.STNAME == sta) & (night_2020.PERIOD == period)].VAL)
-		# night_av_dif = night_av_2019 - night_av_2020
-		# res_list_night.append([stla,stlo,sta,day_av_dif,'Day'])
+		res_list_day.append([stla,stlo,sta,day_av_dif,'Day'])
+		# Night
+		night_av_2019 = average(night_2019[(night_2019.STNAME == sta) & (night_2019.PERIOD == period)].VAL)
+		night_av_2020 = average(night_2020[(night_2020.STNAME == sta) & (night_2020.PERIOD == period)].VAL)
+		night_av_dif = night_av_2019 - night_av_2020
+		res_list_night.append([stla,stlo,sta,night_av_dif,'Night'])
 		# Whole Day
 		av_2019 = average(db_2019[(db_2019.STNAME == sta) & (db_2019.PERIOD == period)].VAL)
 		av_2020 = average(db_2020[(db_2020.STNAME == sta) & (db_2020.PERIOD == period)].VAL)
@@ -76,15 +82,16 @@ for period in db_2019.PERIOD.unique():
 		res_list.append([stla,stlo,sta,av_dif,'Whole'])
 
 
-	# # Day
-	# res_day = pd.DataFrame(res_list_day,columns=['STLA','STLO','STNAME','VAL','LABEL'])
+	# Day
+	abs_max = 12
+	res_day = pd.DataFrame(res_list_day,columns=['STLA','STLO','STNAME','VAL','LABEL'])
 	# abs_max = max(abs(res_day.VAL))
-	# draw_map(res_day.STNAME,res_day.STLO,res_day.STLA,res_day.VAL,'Day',str(period),-abs_max,abs_max)
-	# # Night
-	# res_night = pd.DataFrame(res_list_night,columns=['STLA','STLO','STNAME','VAL','LABEL'])
+	draw_map(res_day.STNAME,res_day.STLO,res_day.STLA,res_day.VAL,'Day',str(period),-abs_max,abs_max,year1+year2)
+	# Night
+	res_night = pd.DataFrame(res_list_night,columns=['STLA','STLO','STNAME','VAL','LABEL'])
 	# abs_max = max(abs(res_night.VAL))
-	# draw_map(res_night.STNAME,res_night.STLO,res_night.STLA,res_night.VAL,'Night',str(period),-abs_max,abs_max)
+	draw_map(res_night.STNAME,res_night.STLO,res_night.STLA,res_night.VAL,'Night',str(period),-abs_max,abs_max,year1+year2)
 	# Whole Day
 	res_whole = pd.DataFrame(res_list,columns=['STLA','STLO','STNAME','VAL','LABEL'])
-	abs_max = max(abs(res_whole.VAL))
-	draw_map(res_whole.STNAME,res_whole.STLO,res_whole.STLA,res_whole.VAL,'Whole Day',str(period),-abs_max,abs_max)
+	# abs_max = max(abs(res_whole.VAL))
+	draw_map(res_whole.STNAME,res_whole.STLO,res_whole.STLA,res_whole.VAL,'Whole Day',str(period),-abs_max,abs_max,year1+year2)
