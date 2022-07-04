@@ -49,8 +49,13 @@ for period, s_inx in zip(s_strs,s_inxs):
 			st_inx = dpc_db[dpc_db['calibration.sta'] == sta].index.tolist()[0]
 			stla = dpc_db['site.lat'][st_inx]
 			stlo = dpc_db['site.lon'][st_inx]
-			res_days = keys[9:-5]
-			nights = keys[1:8] + keys[-4:]
+			# ....
+			# res_days = keys[9:-5]
+			# nights = keys[1:8] + keys[-4:]
+			# Day: 08:15-18:00
+			# Night: 20:15-06:45
+			res_days = keys[12:-6]
+			nights = keys[1:11] + keys[-4:]
 			days_vals = [];
 			if len(res_days) > 0:
 				for res_day in res_days:

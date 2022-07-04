@@ -22,7 +22,7 @@ def draw_map(stname,stlos,stlas,data,period,vmin,vmax,foldername):
 	# Add data points
 	day_map = ax.scatter(stlos, stlas, marker='^', c=data,
 	 s=10, alpha=0.9, transform=ccrs.Geodetic(), 
-	 cmap='jet',vmax=vmax)#, vmin=vmin, vmax=vmax
+	 cmap='jet',vmin=vmin,vmax=vmax)#, vmin=vmin, vmax=vmax
 	# Colorbar
 	cbar = fig.colorbar(day_map)
 	cbar.set_label(r'Power (db rel. 1 (m/s$^{2}$)$^{2}$/Hz)', rotation=90)
@@ -49,19 +49,20 @@ dpc_db = pd.read_csv('../DBs/dpc.csv')
 
 year1 = '2022'
 year2 = '2019'
-db_2019 = pd.read_csv('../DBs/weekday_weekend_' + year1 + '.csv')
-db_2020 = pd.read_csv('../DBs/weekday_weekend_' + year2 + '.csv')
+# db_2019 = pd.read_csv('../DBs/weekday_weekend_' + year1 + '.csv')
+# db_2020 = pd.read_csv('../DBs/weekday_weekend_' + year2 + '.csv')
 
-frames = [db_2019, db_2020]
-result = pd.concat(frames)
+# frames = [db_2019, db_2020]
+# result = pd.concat(frames)
+
+result = pd.read_csv('../DBs/Daylong_noise_avg_daily.csv')
 
 # common_stas = list(set(weekday_2019.STNAME.unique()) & set(weekday_2020.STNAME.unique()) & set(weekend_2019.STNAME.unique()) & set(weekend_2020.STNAME.unique()))
 
 stas = result.STNAME.unique()
 
-vmins = [-135,-135,-135,-135,-135,-135]
-vmaxs = [-91.5,-101.3,-114.1,-120,-112.1,-97.56]
-
+vmins = [-135,-135,-135,-135,-135,-135,-129.5,-128.2,-124.1]
+vmaxs = [-91.5,-101.3,-114.1,-120.0,-112.1,-97.6,-104.4,-102.5,-98.1]
 
 for period, vmin, vmax in zip(result.PERIOD.unique(), vmins, vmaxs):
 	res_list = []
@@ -85,10 +86,10 @@ for period, vmin, vmax in zip(result.PERIOD.unique(), vmins, vmaxs):
 	high_len = len(high_noise)
 	print(period,high_len,(high_len/len(stas))*100)
 
-	vmax = np.percentile(res_whole.VAL, 95)
+	# vmax = np.percentile(res_whole.VAL, 95)
 	# max_inx = res_whole[res_whole['VAL'] == max(res_whole.VAL)].index#.tolist()[0]
 	# res_whole = res_whole.drop(max_inx)
 	# print(res_whole.STNAME[max_inx])
 	# abs_min = min(abs(res_whole.VAL))
 	# abs_max = max(abs(res_whole.VAL))
-	draw_map(res_whole.STNAME,res_whole.STLO,res_whole.STLA,res_whole.VAL,str(period),vmax,vmax,year1+year2)
+	draw_map(res_whole.STNAME,res_whole.STLO,res_whole.STLA,res_whole.VAL,str(period),vmin,vmax,year1+year2)

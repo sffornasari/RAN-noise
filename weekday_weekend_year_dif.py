@@ -43,43 +43,47 @@ def draw_map(stname,stlos,stlas,data,time,period,vmin,vmax,foldername):
 	plt.close('all')
 	return
 
+year0 = '2019'
 year1 = '2022'
 year2 = '2020'
-db_2019 = pd.read_csv('../DBs/weekday_weekend_' + year1 + '.csv')
-db_2020 = pd.read_csv('../DBs/weekday_weekend_' + year2 + '.csv')
+db_0 = pd.read_csv('../DBs/weekday_weekend_' + year0 + '.csv')
+db_1 = pd.read_csv('../DBs/weekday_weekend_' + year1 + '.csv')
+frames = [db_0, db_1]
+db_1 = pd.concat(frames)
+db_2 = pd.read_csv('../DBs/weekday_weekend_' + year2 + '.csv')
 
 # Weekday
-weekday_2019 = db_2019[db_2019.LABEL == 'Weekday']
-weekday_2020 = db_2020[db_2020.LABEL == 'Weekday']
+weekday_1 = db_1[db_1.LABEL == 'Weekday']
+weekday_2 = db_2[db_2.LABEL == 'Weekday']
 # Weekend
-weekend_2019 = db_2019[db_2019.LABEL == 'Weekend']
-weekend_2020 = db_2020[db_2020.LABEL == 'Weekend']
+weekend_1 = db_1[db_1.LABEL == 'Weekend']
+weekend_2 = db_2[db_2.LABEL == 'Weekend']
 
-common_stas = list(set(weekday_2019.STNAME.unique()) & set(weekday_2020.STNAME.unique()) & set(weekend_2019.STNAME.unique()) & set(weekend_2020.STNAME.unique()))
-
-
+common_stas = list(set(weekday_1.STNAME.unique()) & set(weekday_2.STNAME.unique()) & set(weekend_1.STNAME.unique()) & set(weekend_2.STNAME.unique()))
 
 
-for period in db_2019.PERIOD.unique():
+
+
+for period in db_1.PERIOD.unique():
 	res_list_weekday = []; res_list_weekend = []; res_list = []
 	progress = ProgressBar(max_value=len(common_stas))
 	for sta in progress(common_stas):
 		# Day
-		weekday_av_2019 = average(weekday_2019[(weekday_2019.STNAME == sta) & (weekday_2019.PERIOD == period)].VAL)
-		weekday_av_2020 = average(weekday_2020[(weekday_2020.STNAME == sta) & (weekday_2020.PERIOD == period)].VAL)
-		weekday_av_dif = weekday_av_2019 - weekday_av_2020
-		stla = weekday_2019[weekday_2019.STNAME == sta]['STLA'].unique()[0]
-		stlo = weekday_2019[weekday_2019.STNAME == sta]['STLO'].unique()[0]
+		weekday_av_1 = average(weekday_1[(weekday_1.STNAME == sta) & (weekday_1.PERIOD == period)].VAL)
+		weekday_av_2 = average(weekday_2[(weekday_2.STNAME == sta) & (weekday_2.PERIOD == period)].VAL)
+		weekday_av_dif = weekday_av_1 - weekday_av_2
+		stla = weekday_1[weekday_1.STNAME == sta]['STLA'].unique()[0]
+		stlo = weekday_1[weekday_1.STNAME == sta]['STLO'].unique()[0]
 		res_list_weekday.append([stla,stlo,sta,weekday_av_dif,'Weekday'])
 		# Night
-		weekend_av_2019 = average(weekend_2019[(weekend_2019.STNAME == sta) & (weekend_2019.PERIOD == period)].VAL)
-		weekend_av_2020 = average(weekend_2020[(weekend_2020.STNAME == sta) & (weekend_2020.PERIOD == period)].VAL)
-		weekend_av_dif = weekend_av_2019 - weekend_av_2020
+		weekend_av_1 = average(weekend_1[(weekend_1.STNAME == sta) & (weekend_1.PERIOD == period)].VAL)
+		weekend_av_2 = average(weekend_2[(weekend_2.STNAME == sta) & (weekend_2.PERIOD == period)].VAL)
+		weekend_av_dif = weekend_av_1 - weekend_av_2
 		res_list_weekend.append([stla,stlo,sta,weekend_av_dif,'Weekend'])
 		# Whole Week
-		av_2019 = average(db_2019[(db_2019.STNAME == sta) & (db_2019.PERIOD == period)].VAL)
-		av_2020 = average(db_2020[(db_2020.STNAME == sta) & (db_2020.PERIOD == period)].VAL)
-		av_dif = av_2019 - av_2020
+		av_1 = average(db_1[(db_1.STNAME == sta) & (db_1.PERIOD == period)].VAL)
+		av_2 = average(db_2[(db_2.STNAME == sta) & (db_2.PERIOD == period)].VAL)
+		av_dif = av_1 - av_2
 		res_list.append([stla,stlo,sta,av_dif,'Whole Week'])
 
 
@@ -87,12 +91,12 @@ for period in db_2019.PERIOD.unique():
 	abs_max = 12
 	res_weekday = pd.DataFrame(res_list_weekday,columns=['STLA','STLO','STNAME','VAL','LABEL'])
 	# abs_max = max(abs(res_weekday.VAL))
-	draw_map(res_weekday.STNAME,res_weekday.STLO,res_weekday.STLA,res_weekday.VAL,'Weekday',str(period),-abs_max,abs_max,year1+year2)
+	draw_map(res_weekday.STNAME,res_weekday.STLO,res_weekday.STLA,res_weekday.VAL,'Weekday',str(period),-abs_max,abs_max,year0+year1+year2)
 	# Weekend
 	res_weekend = pd.DataFrame(res_list_weekend,columns=['STLA','STLO','STNAME','VAL','LABEL'])
 	# abs_max = max(abs(res_weekend.VAL))
-	draw_map(res_weekend.STNAME,res_weekend.STLO,res_weekend.STLA,res_weekend.VAL,'Weekend',str(period),-abs_max,abs_max,year1+year2)
+	draw_map(res_weekend.STNAME,res_weekend.STLO,res_weekend.STLA,res_weekend.VAL,'Weekend',str(period),-abs_max,abs_max,year0+year1+year2)
 	# Whole Week
 	res_whole = pd.DataFrame(res_list,columns=['STLA','STLO','STNAME','VAL','LABEL'])
 	# abs_max = max(abs(res_whole.VAL))
-	draw_map(res_whole.STNAME,res_whole.STLO,res_whole.STLA,res_whole.VAL,'Whole Week',str(period),-abs_max,abs_max,year1+year2)
+	draw_map(res_whole.STNAME,res_whole.STLO,res_whole.STLA,res_whole.VAL,'Whole Week',str(period),-abs_max,abs_max,year0+year1+year2)

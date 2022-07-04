@@ -30,7 +30,7 @@ def draw_map(stname,stlos,stlas,data,plttype,time,year,period,vmin,vmax):
 	# Add data points
 	day_map = ax.scatter(stlos, stlas, marker='^', c=data,
 	 s=6, alpha=0.7, transform=ccrs.Geodetic(), 
-	 cmap='seismic', vmax=vmax) #vmin=vmin, 
+	 cmap='seismic', vmin=vmin, vmax=vmax) #vmin=vmin, 
 	# Colorbar
 	fig.colorbar(day_map)
 	# Use the cartopy interface to create a matplotlib transform object
@@ -130,20 +130,20 @@ for period, s_inx, vmin, vmax in zip(s_strs,s_inxs, vmins, vmaxs):
 	day = day.groupby(['STNAME','STLA','STLO'], as_index=False, sort=False)['VAL'].mean()
 	night = res[res.LABEL == 'Night']
 	night = night.groupby(['STNAME','STLA','STLO'], as_index=False, sort=False)['VAL'].mean()
-	plttype = 'General'
+	plttype = 'Residual'
 	if plttype == 'Residual':
 		median_day = np.nanmedian(day.VAL)
 		median_night = np.nanmedian(night.VAL)
 		median_day_vals = day.VAL-median_day
 		median_night_vals = night.VAL-median_night
-		# vmin, vmax = minmax(median_day_vals,median_day_vals)
-		vmax = np.percentile(median_day_vals, 95)
-		draw_map(day.STNAME,day.STLO,day.STLA,median_day_vals,plttype,'Day',syear,period,vmin=-vmax,vmax=vmax)
-		# vmin, vmax = minmax(median_night_vals,median_night_vals)
-		vmax = np.percentile(median_night_vals, 95)
-		draw_map(night.STNAME,night.STLO,night.STLA,median_night_vals,plttype,'Night',syear,period,vmin=-vmax,vmax=vmax)
-		vmax = np.percentile(day.VAL-night.VAL, 95)
-		draw_map(night.STNAME,night.STLO,night.STLA,day.VAL-night.VAL,plttype,'Night',syear,period,vmin=-vmax,vmax=vmax)
+		# # vmin, vmax = minmax(median_day_vals,median_day_vals)
+		# vmax = np.percentile(median_day_vals, 95)
+		# draw_map(day.STNAME,day.STLO,day.STLA,median_day_vals,plttype,'Day',syear,period,vmin=-vmax,vmax=vmax)
+		# # vmin, vmax = minmax(median_night_vals,median_night_vals)
+		# vmax = np.percentile(median_night_vals, 95)
+		# draw_map(night.STNAME,night.STLO,night.STLA,median_night_vals,plttype,'Night',syear,period,vmin=-vmax,vmax=vmax)
+		vmax = np.nanpercentile(day.VAL-night.VAL, 95)
+		draw_map(night.STNAME,night.STLO,night.STLA,day.VAL-night.VAL,plttype,'Day-Night',syear,period,vmin=-vmax,vmax=vmax)
 	elif plttype == 'General':
 		# vmin, vmax = minmax(day.VAL,day.VAL)
 		vmax = np.nanpercentile(day.VAL, 95)

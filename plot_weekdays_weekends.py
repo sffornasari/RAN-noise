@@ -30,7 +30,7 @@ def draw_map(stname,stlos,stlas,data,plttype,time,year,period,vmin,vmax):
 	# Add data points
 	day_map = ax.scatter(stlos, stlas, marker='^', c=data,
 	 s=6, alpha=0.7, transform=ccrs.Geodetic(), 
-	 cmap='jet', vmax=vmax) #seismic   vmin=vmin, 
+	 cmap='seismic', vmin=vmin, vmax=vmax) #jet   vmin=vmin, 
 
 	# for i, txt in enumerate(stname):
 	# 	ax.text(x=stlos[i],y=stlas[i],s=txt, transform=ccrs.Geodetic())
@@ -135,7 +135,7 @@ for period, s_inx, vmin, vmax in zip(s_strs,s_inxs, vmins, vmaxs):
 				res_list.append([stla,stlo,sta,average(whole_week),'Whole Week'])
 
 			except:
-				print('Error:',npz)
+				# print('Error:',npz)
 				continue
 		
 
@@ -149,7 +149,7 @@ for period, s_inx, vmin, vmax in zip(s_strs,s_inxs, vmins, vmaxs):
 	wholeweek = res[res.LABEL == 'Whole Week']
 	wholeweek = wholeweek.groupby(['STNAME','STLA','STLO'], as_index=False, sort=False)['VAL'].mean()
 
-	plttype = 'General'
+	plttype = 'Residual'
 	if plttype == 'Residual':
 		median_weekday = np.nanmedian(weekday.VAL)
 		median_weekend = np.nanmedian(weekend.VAL)
@@ -157,17 +157,17 @@ for period, s_inx, vmin, vmax in zip(s_strs,s_inxs, vmins, vmaxs):
 		median_weekday_vals = weekday.VAL-median_weekday
 		median_weekend_vals = weekend.VAL-median_weekend
 		median_wholeweek_vals=wholeweek.VAL-median_wholeweek
-		# vmin, vmax = minmax(median_weekday_vals,median_weekday_vals)
-		vmax = np.percentile(median_weekday_vals, 95)
-		draw_map(weekday.STNAME,weekday.STLO,weekday.STLA,median_weekday_vals,plttype,'Weekday',syear,period,vmin=-vmax,vmax=vmax)
-		# vmin, vmax = minmax(median_weekend_vals,median_weekend_vals)
-		vmax = np.percentile(median_weekend_vals, 95)
-		draw_map(weekend.STNAME,weekend.STLO,weekend.STLA,median_weekend_vals,plttype,'Weekend',syear,period,vmin=-vmax,vmax=vmax)
-		# vmin, vmax = minmax(median_wholeweek_vals,median_wholeweek_vals)
-		vmax = np.percentile(median_wholeweek_vals, 95)
-		draw_map(wholeweek.STNAME,wholeweek.STLO,wholeweek.STLA,median_wholeweek_vals,plttype,'Whole Week',syear,period,vmin=-vmax,vmax=vmax)
-		# Weekday Weekend Dif
-		vmax = np.percentile(weekday.VAL-weekend.VAL, 95)
+		# # vmin, vmax = minmax(median_weekday_vals,median_weekday_vals)
+		# vmax = np.percentile(median_weekday_vals, 95)
+		# draw_map(weekday.STNAME,weekday.STLO,weekday.STLA,median_weekday_vals,plttype,'Weekday',syear,period,vmin=-vmax,vmax=vmax)
+		# # vmin, vmax = minmax(median_weekend_vals,median_weekend_vals)
+		# vmax = np.percentile(median_weekend_vals, 95)
+		# draw_map(weekend.STNAME,weekend.STLO,weekend.STLA,median_weekend_vals,plttype,'Weekend',syear,period,vmin=-vmax,vmax=vmax)
+		# # vmin, vmax = minmax(median_wholeweek_vals,median_wholeweek_vals)
+		# vmax = np.percentile(median_wholeweek_vals, 95)
+		# draw_map(wholeweek.STNAME,wholeweek.STLO,wholeweek.STLA,median_wholeweek_vals,plttype,'Whole Week',syear,period,vmin=-vmax,vmax=vmax)
+		# # Weekday Weekend Dif
+		vmax = np.nanpercentile(weekday.VAL-weekend.VAL, 95)
 		draw_map(wholeweek.STNAME,wholeweek.STLO,wholeweek.STLA,weekday.VAL-weekend.VAL,plttype,'Weekday-Weekend',syear,period,vmin=-vmax,vmax=vmax)
 	elif plttype == 'General':
 		# vmin, vmax = minmax(weekday.VAL,weekday.VAL)
