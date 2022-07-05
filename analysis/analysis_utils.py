@@ -196,3 +196,66 @@ def wd_we_md(oto):
                     vmd.append(v)
             oldd = d
     return wd, we
+
+###
+def plot_mpld3_ita(attrdict, P, dpc, basemap=None, title='', tiplabel='Attributes', outfile=''):
+    """attrdict = {P1:{sta1:v1, sta2:v2,...}, P2:{sta1:v1, sta2:v2,...}, ...} dict of dicts containing the attributes to be plotted.
+    P = list of periods of interest [max 11 otherwise modify subplot].
+    dpc = DataFrame containing info about the station location.
+    basemap (optional) = path to the basemap to be plotted.
+    """
+    if outfile == '':
+        print('outfile attribute must be defined!')
+        return
+    img_extent = (6.5465398029999999, 18.5205398029999984, 35.4912308440000004, 47.0932308439999971)
+    fig = plt.figure(figsize=(25, 12))
+
+    n = 0
+    for n, Pk in enumerate(P):
+        coord = [get_coord(dpc, sta) for sta in attrdict[Pk].keys()]
+        x, y = zip(*coord)
+
+        ax = plt.subplot(3, 4, n+1)
+        ax.set_aspect(1)
+        ax.set_xmargin(0.05)
+        ax.set_ymargin(0.10)
+        if basemap != None:
+            img = plt.imread(basemap)              
+            ax.imshow(img, origin='upper', extent=img_extent)
+        vminmax = np.percentile(np.abs(list(attrdict[Pk].values())), 95)
+        dd = ax.scatter(x,y,c=list(attrdict[Pk].values()), vmin=-vminmax, vmax=vminmax, cmap='seismic_r', s=10, marker='o', edgecolor='k', linewidths=0.5)
+        fig.colorbar(dd,
+            orientation='vertical',
+            label="Power change (dB)",
+            ax=ax,
+            extend = 'both')
+        labels = []
+        for i, st in enumerate(attrdict[Pk].keys()):
+            label = sattr.query(f'sta=="{st}"')[['net', 'sta', 'lito_code']]
+            label.columns = ['Network', 'Station', 'Litology']
+            label['Difference'] = f'{np.round(attrdict[Pk][st], 2)}dB'
+            label = label.T
+            label.columns = [tiplabel]
+            labels.append(str(label.to_html()))
+        tooltip = mpld3.plugins.PointHTMLTooltip(dd, labels,
+                                       voffset=10, hoffset=10, css=css)
+        mpld3.plugins.connect(fig, tooltip)
+
+        ax.set_title(f'Period: {Pk}s')
+    ax = plt.subplot(3, 4, n+1)
+    proxy = [ax.add_patch(mpl.patches.Rectangle((0,0),1,1,fc = np.array(fc)/255)) for fc in lito_colors.values()]
+    labels = lito_colors.keys()
+    leg = ax.legend(proxy, labels, loc='center', framealpha=1.0, ncol=3, fontsize=12, title='Litology:')
+    leg._legend_box.align = "left"
+    ax.set_xlim(-100,100)
+    ax.set_ylim(-100,100)
+    ax.axis('off')
+    plt.tight_layout()
+    if title != '':
+        htmltxt = mpld3.fig_to_html(fig)
+        htmltxt = htmltxt.replace("</style>", f'</style>\n<h1 style="text-align: center">{title}</h1>')
+        with open(outfile, 'w') as f:
+            f.write(htmltxt)
+    else:
+        mpld3.save_html(fig, outfile)
+    return
