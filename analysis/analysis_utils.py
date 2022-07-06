@@ -49,6 +49,22 @@ def seasons(oto):
                   autumn[sta].append(v)
     return winter, spring, summer, autumn
 
+def wint_summ(oto):
+    """Function to compute the difference of the winter and summer median (all year long) for a single period.
+    """
+    mwinsum = {}
+    mwin  =  {}
+    msum = {}
+    w, sp, su, au = seasons(oto)
+    for st, ts in oto.items():
+        if len(w[st])>0 and len(su[st])>0:
+            mw = np.median(w[st])
+            mwin[st] = mw
+            msu = np.median(su[st])
+            msum[st] = msu
+            mwinsum[st] = mw-msu
+    return mwinsum
+
 def day_night(oto):
     """Function to separate the values of the timeseries based on the processing window starting time.
     All the values from day/night (all year long) are outputted in a list.
@@ -139,9 +155,11 @@ def day_night_avg(oto):
 def wd_we(oto):
     """WORKS ONLY FOR 2019! Function to separate the values of the timeseries batween weekdays and weekend.
     All the values from each category (all year long) are outputted in a list.
+    The difference between the medians of weekends and weekdays is computed and outputted.
     """
     wd = {}
     we = {}
+    wewd = {}
     for sta in oto.keys():
         wd[sta] = []
         we[sta] = []
@@ -153,14 +171,19 @@ def wd_we(oto):
                     wd[sta].append(v)
                 elif d == 6:
                     we[sta].append(v)
-    return wd, we
+    for sta, ts in oto.items():
+        if len(wd[sta])>0 and len(we[sta])>0:
+            wewd[sta] = np.median(we[st])-np.median(wd[sta])
+    return wd, we, wewd
 
 def wd_we_md(oto):
     """WORKS ONLY FOR 2019! The days are divided in weekdays and weekend: for each day the median of the values is computed.
     The lists of medians (all year long) is outputted.
+    The difference of the median of the medians of the weekends and weekdays is computed and outputted.
     """
     wd = {}
     we = {}
+    wewd
     for sta in oto.keys():
         oldd=0
         wd[sta] = []
@@ -173,16 +196,19 @@ def wd_we_md(oto):
             if d!=oldd:
                 if len(vmd)>0:
                     if oldd%7 < 5:
-                        wd[sta].append(np.mean(vmd))
+                        wd[sta].append(np.median(vmd))
                         vmd = []
                     else:
-                        we[sta].append(np.mean(vmd))
+                        we[sta].append(np.median(vmd))
                         vmd = []
             if True:
                 if True:
                     vmd.append(v)
             oldd = d
-    return wd, we
+    for sta, ts in oto.items():
+        if len(wd[sta])>0 and len(we[sta])>0:
+            wewd[sta] = np.median(we[st])-np.median(wd[sta])
+    return wd, we, wewd
 
 def plot_mpld3_ita(attrdict, P, dpc, basemap=None, title='', tiplabel='Attributes', outfile=''):
     """attrdict = {P1:{sta1:v1, sta2:v2,...}, P2:{sta1:v1, sta2:v2,...}, ...} dict of dicts containing the attributes to be plotted.
@@ -245,3 +271,41 @@ def plot_mpld3_ita(attrdict, P, dpc, basemap=None, title='', tiplabel='Attribute
     else:
         mpld3.save_html(fig, outfile)
     return
+  
+  def plot_cartopy_ita(attrdict, P, dpc, title='', outfile=''):
+    """attrdict = {P1:{sta1:v1, sta2:v2,...}, P2:{sta1:v1, sta2:v2,...}, ...} dict of dicts containing the attributes to be plotted.
+    P = list of periods of interest [max 11 otherwise modify subplot].
+    dpc = DataFrame containing info about the station location.
+    """
+    if outfile == '':
+        print('outfile attribute must be defined!')
+        return
+    img_extent = (6.5465398029999999, 18.5205398029999984, 35.4912308440000004, 47.0932308439999971)
+    fig = plt.figure(figsize=(15, 15))
+    for n, Pk in enumerate(P):
+        coord = [get_coord(dpc, sta) for sta in attrdict[Pk].keys()]
+        x, y = zip(*coord)
+
+        fig = plt.figure(figsize=(15, 15))
+        ax = fig.add_subplot(4, 3, n, projection=ccrs.PlateCarree())
+        ax.set_aspect(1)
+        ax.set_xmargin(0.05)
+        ax.set_ymargin(0.10)
+        if basemap != None:
+            img = plt.imread(basemap)              
+            ax.imshow(img, origin='upper', extent=img_extent)
+        vminmax = np.percentile(np.abs(list(attrdict[Pk].values())), 95)
+        dd = ax.scatter(x,y,c=list(attrdict[Pk].values()), vmin=-vminmax, vmax=vminmax, cmap='seismic_r', s=10, marker='o', edgecolor='k', linewidths=0.5)
+        fig.colorbar(dd,
+            orientation='vertical',
+            label="Power change (dB)",
+            ax=ax,
+            extend = 'both')
+        ax.add_feature(cfeature.OCEAN, zorder=100)
+        ax.add_feature(cfeature.COASTLINE)
+        ax.add_feature(cfeature.BORDERS, linestyle=':')
+        ax.set_title(f'Period: {Pk}s')
+    if title != '':
+        fig.suptitle(title)
+    plt.savefig(outfile, dpi=300)
+    plt.show()
