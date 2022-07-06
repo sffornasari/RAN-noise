@@ -74,20 +74,6 @@ def day_night_md(oto):
     if both values are available, the difference is taken.
     The median of the differences (all year long) is outputted.
     """
-    night = {}
-    day = {}
-    for sta in oto.keys():
-        night[sta] = []
-        day[sta] = []
-        tv = list(zip(*oto[sta]))
-        for t, v in tv:
-            h = int(str(int(t))[7:9])
-            if True:
-                if h < 6 or h > 20:
-                    night[sta].append(v)
-                elif 8< h < 18:
-                    day[sta].append(v)
-    return day, night
     nightday = {}
     for sta in oto.keys():
         oldd=0
@@ -198,7 +184,6 @@ def wd_we_md(oto):
             oldd = d
     return wd, we
 
-###
 def plot_mpld3_ita(attrdict, P, dpc, basemap=None, title='', tiplabel='Attributes', outfile=''):
     """attrdict = {P1:{sta1:v1, sta2:v2,...}, P2:{sta1:v1, sta2:v2,...}, ...} dict of dicts containing the attributes to be plotted.
     P = list of periods of interest [max 11 otherwise modify subplot].
