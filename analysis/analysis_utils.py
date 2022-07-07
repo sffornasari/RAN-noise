@@ -294,7 +294,7 @@ def plot_mpld3_ita(attrdict, P, dpc, basemap=None, title='', tiplabel='Attribute
         mpld3.save_html(fig, outfile)
     return
   
-  def plot_cartopy_ita(attrdict, P, dpc, title='', outfile=''):
+def plot_cartopy_ita(attrdict, P, dpc, title='', outfile=''):
     """attrdict = {P1:{sta1:v1, sta2:v2,...}, P2:{sta1:v1, sta2:v2,...}, ...} dict of dicts containing the attributes to be plotted.
     P = list of periods of interest [max 11 otherwise modify subplot].
     dpc = DataFrame containing info about the station location.
