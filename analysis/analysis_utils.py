@@ -211,6 +211,18 @@ def wd_we_md(oto):
         if len(wd[sta])>0 and len(we[sta])>0:
             wewd[sta] = np.median(we[st])-np.median(wd[sta])
     return wd, we, wewd
+  
+def yearly_statistics(oto):
+    """Function to compute the median and 2.5-percentile for each station over extended periods.
+    """
+    md = {}
+    s2_5 = {}
+    for sta in oto.keys():
+        yv = oto[sta][1]
+        if len(yv)>0:
+            md[sta] = np.median(yv)
+            s2_5[sta] = np.percentile(yv, 2.5)
+    return md, s2_5
 
 def plot_mpld3_ita(attrdict, P, dpc, basemap=None, title='', tiplabel='Attributes', outfile=''):
     """attrdict = {P1:{sta1:v1, sta2:v2,...}, P2:{sta1:v1, sta2:v2,...}, ...} dict of dicts containing the attributes to be plotted.
