@@ -155,7 +155,7 @@ def day_night_avg(oto):
     return nightday
 
 def wd_we(oto):
-    """WORKS ONLY FOR 2019! Function to separate the values of the timeseries batween weekdays and weekend.
+    """WORKS ONLY FOR 2019 & 2022! Function to separate the values of the timeseries batween weekdays and weekend.
     All the values from each category (all year long) are outputted in a list.
     The difference between the medians of weekends and weekdays is computed and outputted.
     """
@@ -167,12 +167,17 @@ def wd_we(oto):
         we[sta] = []
         tv = list(zip(*oto[sta]))
         for t, v in tv:
+            y = int(str(int(t))[:4])
+            d = int(str(int(t))[4:7])
             h = int(str(int(t))[7:9])
-            if 8< h < 18:
-                if d%7 < 5:
-                    wd[sta].append(v)
-                elif d == 6:
-                    we[sta].append(v)
+            if y==2019 and d%7 < 5:
+                wd[sta].append(v)
+            elif y==2019 and d%7 >= 5:
+                we[sta].append(v)
+            if y==2022 and d%7 > 2:
+                wd[sta].append(v)
+            elif y==2022 and d%7 <= 2:
+                we[sta].append(v)
     for sta, ts in oto.items():
         if len(wd[sta])>0 and len(we[sta])>0:
             wewd[sta] = np.median(we[st])-np.median(wd[sta])
