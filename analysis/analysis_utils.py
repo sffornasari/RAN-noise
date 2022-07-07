@@ -41,14 +41,14 @@ def seasons(oto):
         tv = list(zip(*oto[sta]))
         for t, v in tv:
             jday = int(str(int(t))[4:7])
-              if jday < 80 or jday > 355:
-                  winter[sta].append(v)
-              elif jday >= 80 and jday < 172:
-                  spring[sta].append(v)
-              elif jday >= 172 and jday < 266:
-                  summer[sta].append(v)
-              elif jday >= 266 and jday < 355:
-                  autumn[sta].append(v)
+            if jday < 80 or jday > 355:
+              winter[sta].append(v)
+            elif jday >= 80 and jday < 172:
+              spring[sta].append(v)
+            elif jday >= 172 and jday < 266:
+              summer[sta].append(v)
+            elif jday >= 266 and jday < 355:
+              autumn[sta].append(v)
     return winter, spring, summer, autumn
 
 def wint_summ(oto):
