@@ -180,7 +180,7 @@ def wd_we(oto):
                 we[sta].append(v)
     for sta, ts in oto.items():
         if len(wd[sta])>0 and len(we[sta])>0:
-            wewd[sta] = np.median(we[st])-np.median(wd[sta])
+            wewd[sta] = np.median(we[sta])-np.median(wd[sta])
     return wd, we, wewd
 
 def wd_we_md(oto):
