@@ -5,17 +5,17 @@ import cartopy.feature as cfeature
 import mpld3
 
 def merge_otos(otolist):
-  """Function to merge the timeseries for a single period
-  for different years.
-  The files in otolist should be in order.
-  """
-  moto = {}
+    """Function to merge the timeseries for a single period
+    for different years.
+    The files in otolist should be in order.
+    """
+    moto = {}
     for oto in otolist:
         for sta in oto.keys():
             if not sta in moto:
                 moto[sta] = [[],[]]
-            moto[sta][0] += list(oto[sta][0])
-            moto[sta][1] += list(oto[sta][1])
+                moto[sta][0] += list(oto[sta][0])
+                moto[sta][1] += list(oto[sta][1])
     return moto
   
 def get_coord(df, sta):
