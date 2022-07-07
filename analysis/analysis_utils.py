@@ -179,7 +179,7 @@ def wd_we(oto):
     return wd, we, wewd
 
 def wd_we_md(oto):
-    """WORKS ONLY FOR 2019! The days are divided in weekdays and weekend: for each day the median of the values is computed.
+    """WORKS ONLY FOR 2019 & 2022! The days are divided in weekdays and weekend: for each day the median of the values is computed.
     The lists of medians (all year long) is outputted.
     The difference of the median of the medians of the weekends and weekdays is computed and outputted.
     """
@@ -193,20 +193,28 @@ def wd_we_md(oto):
         tv = list(zip(*oto[sta]))
         vmd = []
         for t, v in tv:
+            y = int(str(int(t))[:4])
             #h = int(str(int(t))[7:9])
             d = int(str(int(t))[4:7])
             if d!=oldd:
                 if len(vmd)>0:
-                    if oldd%7 < 5:
+                    if oldy==2019 and oldd%7 < 5:
                         wd[sta].append(np.median(vmd))
                         vmd = []
-                    else:
+                    elif oldy==2019 and oldd%7 >= 5:
+                        we[sta].append(np.median(vmd))
+                        vmd = []
+                    if oldy==2022 and oldd%7 > 2:
+                        wd[sta].append(np.median(vmd))
+                        vmd = []
+                    elif oldy==2022 and oldd%7 <= 2:
                         we[sta].append(np.median(vmd))
                         vmd = []
             if True:
                 if True:
                     vmd.append(v)
             oldd = d
+            oldy = y
     for sta, ts in oto.items():
         if len(wd[sta])>0 and len(we[sta])>0:
             wewd[sta] = np.median(we[st])-np.median(wd[sta])
