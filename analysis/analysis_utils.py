@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import mpld3
@@ -51,10 +52,10 @@ def seasons(oto):
               autumn[sta].append(v)
     return winter, spring, summer, autumn
 
-def wint_summ(oto):
+def sum_win(oto):
     """Function to compute the difference of the winter and summer median (all year long) for a single period.
     """
-    mwinsum = {}
+    msumwin = {}
     mwin  =  {}
     msum = {}
     w, sp, su, au = seasons(oto)
@@ -64,8 +65,8 @@ def wint_summ(oto):
             mwin[st] = mw
             msu = np.median(su[st])
             msum[st] = msu
-            mwinsum[st] = mw-msu
-    return mwinsum
+            msumwin[st] = msu-mw
+    return msumwin
 
 def day_night(oto):
     """Function to separate the values of the timeseries based on the processing window starting time.
@@ -87,12 +88,12 @@ def day_night(oto):
     return day, night
 
 def day_night_md(oto):
-    """Function to compute the median of the medians of the night-day difference.
+    """Function to compute the median of the medians of the day-night difference.
     For each day the medians of the daytime values and nighttime values are computed (if possible):
     if both values are available, the difference is taken.
     The median of the differences (all year long) is outputted.
     """
-    nightday = {}
+    daynight = {}
     for sta in oto.keys():
         oldd=0
         md = []
@@ -116,17 +117,17 @@ def day_night_md(oto):
                     vmd.append(v)
             oldd = d
         if len(md)>0 and len(mn)>0:
-            dnsta = np.array(mn)-np.array(md)
-            nightday[sta] = np.median(dnsta)
-    return nightday
+            dnsta = np.array(md)-np.array(mn)
+            daynight[sta] = np.median(dnsta)
+    return daynight
 
 def day_night_avg(oto):
-    """Function to compute the mean of the means of the night-day difference.
+    """Function to compute the mean of the means of the day-night difference.
     For each day the means of the daytime values and nighttime values are computed (if possible):
     if both values are available, the difference is taken.
     The mean of the differences (all year long) is outputted.
     """
-    nightday = {}
+    daynight = {}
     for sta in oto.keys():
         oldd=0
         md = []
@@ -150,9 +151,9 @@ def day_night_avg(oto):
                     vmd.append(v)
             oldd = d
         if len(md)>0 and len(mn)>0:
-            dnsta = np.array(mn)-np.array(md)
-            nightday[sta] = np.mean(dnsta)
-    return nightday
+            dnsta = np.array(md)-np.array(mn)
+            daynight = [sta] = np.mean(dnsta)
+    return daynight
 
 def wd_we(oto):
     """WORKS ONLY FOR 2019 & 2022! Function to separate the values of the timeseries batween weekdays and weekend.
@@ -190,7 +191,7 @@ def wd_we_md(oto):
     """
     wd = {}
     we = {}
-    wewd
+    wdwe = {}
     for sta in oto.keys():
         oldd=0
         wd[sta] = []
@@ -222,8 +223,8 @@ def wd_we_md(oto):
             oldy = y
     for sta, ts in oto.items():
         if len(wd[sta])>0 and len(we[sta])>0:
-            wewd[sta] = np.median(we[st])-np.median(wd[sta])
-    return wd, we, wewd
+            wdwe[sta] = np.median(wd[sta])-np.median(we[sta])
+    return wd, we, wdwe
   
 def yearly_statistics(oto):
     """Function to compute the median and 2.5-percentile for each station over extended periods.
@@ -299,7 +300,7 @@ def plot_mpld3_ita(attrdict, P, dpc, basemap=None, title='', tiplabel='Attribute
         mpld3.save_html(fig, outfile)
     return
   
-def plot_cartopy_ita(attrdict, P, dpc, title='', outfile=''):
+def plot_cartopy_ita(attrdict, P, dpc, fsize = (15,12), title='', outfile=''):
     """attrdict = {P1:{sta1:v1, sta2:v2,...}, P2:{sta1:v1, sta2:v2,...}, ...} dict of dicts containing the attributes to be plotted.
     P = list of periods of interest [max 11 otherwise modify subplot].
     dpc = DataFrame containing info about the station location.
@@ -308,21 +309,20 @@ def plot_cartopy_ita(attrdict, P, dpc, title='', outfile=''):
         print('outfile attribute must be defined!')
         return
     img_extent = (6.5465398029999999, 18.5205398029999984, 35.4912308440000004, 47.0932308439999971)
-    fig = plt.figure(figsize=(15, 15))
+    fig = plt.figure(figsize=fsize)
     for n, Pk in enumerate(P):
-        coord = [get_coord(dpc, sta) for sta in attrdict[Pk].keys()]
+        data = {sta: attrdict[Pk][sta] for sta in sorted(attrdict[Pk], key=lambda dict_key: abs(attrdict[Pk][dict_key]))}
+        coord = [get_coord(dpc, sta) for sta in data.keys()]
         x, y = zip(*coord)
-
-        fig = plt.figure(figsize=(15, 15))
-        ax = fig.add_subplot(4, 3, n, projection=ccrs.PlateCarree())
+        ax = fig.add_subplot(4, 3, n+1, projection=ccrs.PlateCarree())
         ax.set_aspect(1)
-        ax.set_xmargin(0.05)
-        ax.set_ymargin(0.10)
-        if basemap != None:
-            img = plt.imread(basemap)              
-            ax.imshow(img, origin='upper', extent=img_extent)
-        vminmax = np.percentile(np.abs(list(attrdict[Pk].values())), 95)
-        dd = ax.scatter(x,y,c=list(attrdict[Pk].values()), vmin=-vminmax, vmax=vminmax, cmap='seismic_r', s=10, marker='o', edgecolor='k', linewidths=0.5)
+        #ax.set_xmargin(0.05)
+        #ax.set_ymargin(0.10)
+        #if basemap != None:
+        #    img = plt.imread(basemap)              
+        #    ax.imshow(img, origin='upper', extent=img_extent)
+        vminmax = np.percentile(np.abs(list(data.values())), 90)
+        dd = ax.scatter(x,y,c=list(data.values()), vmin=-vminmax, vmax=vminmax, cmap='seismic', s=2, marker='o', edgecolor='k', linewidths=0.1)#
         fig.colorbar(dd,
             orientation='vertical',
             label="Power change (dB)",
@@ -334,5 +334,6 @@ def plot_cartopy_ita(attrdict, P, dpc, title='', outfile=''):
         ax.set_title(f'Period: {Pk}s')
     if title != '':
         fig.suptitle(title)
+    plt.tight_layout()
     plt.savefig(outfile, dpi=300)
     plt.show()
