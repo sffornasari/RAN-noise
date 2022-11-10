@@ -35,13 +35,11 @@ def draw_map(fig,ax,stname,stlos,stlas,data,vmin,vmax):
 
 
 # Opening JSON file
-f = open('../../DBs/JSON_Final/day_night_ext.json')
-# returns JSON object as 
-# a dictionary
+f = open('../DBs/JSON_Final/day_night_ext.json')
 data = json.load(f)
 
 # Read Station Info
-dpc_db = pd.read_csv('../../DBs/station_attributes.csv')
+dpc_db = pd.read_csv('../DBs/station_attributes.csv')
 
 # Years
 year1 = '2019'
@@ -79,4 +77,4 @@ for per_idx, period in enumerate(periods):
 
 
 axs[-3].text(0.65, -0.05, 'Red = Day Noisier', transform=axs[per_idx].transAxes, size=8)
-plt.savefig('../../Figures/Dif_Day_Night2/' + year1+year2 + '/Median/daynight.png',dpi=300, bbox_inches='tight')
+plt.savefig('../Figures/Figure 6.png',dpi=300, bbox_inches='tight')
