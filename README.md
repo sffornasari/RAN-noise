@@ -6,23 +6,25 @@ The script should be used in the following order:
 2. preprocessing/compute_oto_psd.py
 3. preprocessing/compute_psd_P_timeseries.py
 4. analysis/compute_differences.py
-5. ...
 
 Figures in the paper are created with the following codes:
 
-Figure 2 - plot_numberofdays.py \
-Figure 3 - \
-Figure 4 - general.py \
-Figure 5 - \
-Figure 6 - day_night_dif.py \
-Figure 7 - weekday_weekend_dif.py \
-Figure 8 - seasonal_dif.py \
-Figure 9 - covid_general.py \
-Figure 10 - covid_day_night_dif.py \
-Figure 13 - station_hourly_avg.py \
-Figure 15 - car_sta.py \
-Figure S1 - all_periods_general.py \
-Figure S2 - covid_weekday_weekend_dif.py
+Figure 1 - plotting/noise_sources.py \
+Figure 2 - plotting/plot_numberofdays.py \
+Figure 3 - plotting/PSD_ts_plot.py
+Figure 4 - plotting/general.py \
+Figure 5 - plotting/PDFPSD_plot.py \
+Figure 6 - plotting/day_night_dif.py \
+Figure 7 - plotting/weekday_weekend_dif.py \
+Figure 8 - plotting/seasonal_dif.py \
+Figure 9 - plotting/covid_general.py \
+Figure 10 - plotting/covid_day_night_dif.py \
+Figure 13 - plotting/station_hourly_avg.py \
+Figure 15 - plotting/car_sta.py \
+Figure S1 - plotting/all_periods_general.py \
+Figure S2 - plotting/covid_weekday_weekend_dif.py
+
+**N.B. The paths to the files must be checked and updated before running the scripts.**
 
 # To have a complete DBs folder, please use the following link:
 
