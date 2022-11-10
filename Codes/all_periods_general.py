@@ -39,13 +39,13 @@ def draw_map(fig,ax,stname,stlos,stlas,data,vmin,vmax,period):
 
 
 # Opening JSON file
-f = open('../../DBs/JSON_Final/yearly_median_all.json')
+f = open('DBs/JSON_Final/yearly_median_all.json')
 # returns JSON object as 
 # a dictionary
 data = json.load(f)
 
 # Read Station Info
-dpc_db = pd.read_csv('../../DBs/station_attributes.csv')
+dpc_db = pd.read_csv('DBs/station_attributes.csv')
 
 
 # Define Figure
@@ -69,7 +69,6 @@ vmaxs = [f1_high(period).tolist() for period in periods]
 
 for per_idx, (period, vmin, vmax) in enumerate(zip(periods,vmins,vmaxs)):
 	print(period)
-	# print(vmin, vmax,period)
 	fig,ax = plt.subplots(1,1, figsize=(8, 8), facecolor='w', edgecolor='k',subplot_kw={'projection': stamen_terrain.crs}, gridspec_kw = {'wspace':0, 'hspace':0.1})
 	stnames = []; stlos = []; stlas = []; dif = []; 
 	for sta in data[period]:
@@ -83,6 +82,5 @@ for per_idx, (period, vmin, vmax) in enumerate(zip(periods,vmins,vmaxs)):
 		dif.append(val)
 
 	fig, ax = draw_map(fig,ax,stnames,stlos,stlas,dif,vmin,vmax,period)
-	plt.savefig('../../Figures/General_Average2/' + str(period).replace('.','_') + '.png',dpi=100, bbox_inches='tight')
+	plt.savefig('Figures/General_Average/' + str(period).replace('.','_') + '.png',dpi=100, bbox_inches='tight')
 	plt.close('all')
-	# plt.show()
