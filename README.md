@@ -5,7 +5,7 @@ The script should be used in the following order:
 1. preprocessing/compute_full_psd.py
 2. preprocessing/compute_oto_psd.py
 3. preprocessing/compute_psd_P_timeseries.py
-4. analysis/compute_differences.py
+4. analysis/compute_jsons.py
 
 Figures in the paper are created with the following codes:
 
