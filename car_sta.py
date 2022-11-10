@@ -12,8 +12,8 @@ warnings.filterwarnings('ignore')
 year1 = '2019'
 year2 = '2022'
 station = 'PLTA'
-npzs = glob.glob('../../DBs/sens_only/' + year1 + '/**/' + station + '*')
-npzs += glob.glob('../../DBs/sens_only/' + year2 + '/**/' + station + '*')
+npzs = glob.glob('../DBs/sens_only/' + year1 + '/**/' + station + '*')
+npzs += glob.glob('../DBs/sens_only/' + year2 + '/**/' + station + '*')
 npzs = list(set(npzs))
 
 # Lower & Higher Thresholds
@@ -72,15 +72,8 @@ axs[0].legend(ncol=6, prop={'size': 6})
 # FFT
 def calc_fft(data):
 	samp = 100 
-	# Sxx, freqs, t, im = plt.specgram(tr.data[:-1],Fs = 100, NFFT = 256, noverlap = 32,Fc = 1)#, noverlap = 256*0.12)#
-	# Output 51
-	# Fdat = np.fft.rfft(tr.data, n=samp)
-	# Output 4501
 	Fdat = np.fft.rfft(data)
 	freq = np.fft.rfftfreq(data.shape[0], d=1./samp)
-	# print(freq.shape)
-	# print(freq)
-	# print(freq,freq.shape,Fdat.shape)
 	return 2.0/samp * np.abs(Fdat), freq
 
 # # Signal Length
@@ -89,7 +82,7 @@ dlen = 10 * 100
 
 # Load DB
 station = 'PLTA'
-all_files = glob.glob('../../../Car_Detection/Car_Detection_ML/Manual_Picks/' + station + '*.csv')
+all_files = glob.glob('../DBs/Car_Detection/Manual_Picks/' + station + '*.csv')
 
 li = []
 
@@ -113,12 +106,10 @@ for filename in all_files[:]:
 
 	st = read('../../../Car_Detection/Car_Detection_ML/Data_Sta/' + sta + '/' + date + '.00.' + sta + '.HNZ')
 	st.detrend('simple')
-	# Default 0.5 - 50
-	# SeisRaM 0.8 - 25
 	st.filter('bandpass',freqmin=0.5,freqmax=50)
 	st.resample(100)
 	for tr in st:
-		tr.data = tr.data * 10**-9#0.000000001
+		tr.data = tr.data * 10**-9
 
 	for start, end in progress(zip(df.Start, df.End)):
 		st_copy = st.copy()
@@ -128,7 +119,7 @@ for filename in all_files[:]:
 		for tr in st_copy:
 			start_val = int(start*st_copy[0].stats.sampling_rate)
 			end_val = int(end*st_copy[0].stats.sampling_rate)
-			data = tr.data[start_val:end_val]#start_val+dlen]
+			data = tr.data[start_val:end_val]
 			zero_len = dlen - len(data)
 			if zero_len > 0:
 				zero_trace = np.zeros(int(zero_len))
@@ -138,8 +129,6 @@ for filename in all_files[:]:
 			data = np.where(np.isnan(data), 0, data)
 			if max(abs(data)) == 0:
 				flag = True
-
-
 			freq, freq_to_use = calc_fft(data)
 			output_fft.append(freq[:500])
 			output.append(data)
@@ -152,9 +141,7 @@ for filename in all_files[:]:
 			car_output_fft.append(output_fft)
 			count += 1
 
-
 car_fft = np.array(car_output_fft)
-
 
 car_average_vertical = []
 for i in range(car_fft.shape[-1]):
@@ -163,20 +150,12 @@ for i in range(car_fft.shape[-1]):
 	car_average_vertical.append(av_z)
 
 freq_to_use = freq_to_use[:500]
-# print(freq_to_use)
-# freq = np.linspace(0,50,500)
-# car_average_vertical = np.flip(car_average_vertical)
-# print(freq)
-# freq_to_use = 1/freq_to_use[:500]
 freq_to_use = np.reciprocal(freq_to_use)
-# print(freq_to_use)
-# print(freq)
-# print(freq_to_use.shape,car_average_vertical.shape)
-# freq_to_use = np.flip(freq_to_use)
+
 axs[1].plot(freq_to_use,car_average_vertical,c='b',linestyle='-',linewidth=1)
 axs[1].set_xscale('log')
 axs[1].set_xlim([0.02008032,10])
 axs[1].set_yticks([])
 axs[1].set_xlabel('Period (s)')
 
-plt.savefig('../../Figures/Figure15.png', bbox_inches='tight')
+plt.savefig('../Figures/Figure15.png', bbox_inches='tight')
