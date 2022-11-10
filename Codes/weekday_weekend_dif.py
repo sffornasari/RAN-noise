@@ -35,13 +35,11 @@ def draw_map(fig,ax,stname,stlos,stlas,data,vmin,vmax):
 
 
 # Opening JSON file
-f = open('../../DBs/JSON_Final/wd_we_ext.json')
-# returns JSON object as 
-# a dictionary
+f = open('../DBs/JSON_Final/wd_we_ext.json')
 data = json.load(f)
 
 # Read Station Info
-dpc_db = pd.read_csv('../../DBs/station_attributes.csv')
+dpc_db = pd.read_csv('../DBs/station_attributes.csv')
 
 # Years
 year1 = '2019'
@@ -79,4 +77,4 @@ for per_idx, period in enumerate(periods):
 
 
 axs[-3].text(0.65, -0.05, 'Red = Weekday Noisier', transform=axs[per_idx].transAxes, size=8)
-plt.savefig('../../Figures/Dif_Weekday_Weekend2/' + year1+year2 + '/Median/weekdayweekend.png',dpi=300, bbox_inches='tight')
+plt.savefig('../Figures/Figure 7.png',dpi=300, bbox_inches='tight')
