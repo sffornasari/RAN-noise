@@ -104,7 +104,7 @@ for filename in all_files[:]:
 
 	progress = ProgressBar(max_value=len(df))
 
-	st = read('../../../Car_Detection/Car_Detection_ML/Data_Sta/' + sta + '/' + date + '.00.' + sta + '.HNZ')
+	st = read('../../../Car_Detection/Data_Sta/' + sta + '/' + date + '.00.' + sta + '.HNZ')
 	st.detrend('simple')
 	st.filter('bandpass',freqmin=0.5,freqmax=50)
 	st.resample(100)
