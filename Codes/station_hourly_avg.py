@@ -18,9 +18,10 @@ def AHNM():
 # List Results
 year1 = '2019'
 year2 = '2022'
-station = 'PLTA'
+station = 'DST2'
 npzs = glob.glob('../DBs/sens_only/' + year1 + '/**/' + station + '*')
-npzs += glob.glob('../DBs/sens_only/' + year2 + '/**/' + station + '*')
+if year2:
+	npzs += glob.glob('../DBs/sens_only/' + year2 + '/**/' + station + '*')
 npzs = list(set(npzs))
 
 pl,lnm = ALNM()
@@ -29,7 +30,6 @@ ph,hnm = AHNM()
 res = np.load(npzs[0])
 org_keys = list(res.keys())
 pn = res[org_keys[0]]
-# print(pn[2:20])
 org_freqs = res[org_keys[0]]
 org_keys = org_keys[1:]
 middle_times = []
@@ -45,16 +45,13 @@ for i,npz in progress(enumerate(npzs)):
 	keys = list(res.keys())
 	pn = res[keys[0]]
 	for psd in keys[1:]:
-		# freqs = np.empty(len(org_keys))
-		# freqs[:] = np.nan
+
 		idx = org_keys.index(psd)
 		freqs = []
 		for freq_val in res[psd]:
 			freqs.append(freq_val)
 		vals[i,idx,:] = freqs
 
-# high_freq_vals = np.nanmean(vals[:,:,2:20])
-# print(high_freq_vals)
 
 fig = plt.figure(figsize=(16, 9),dpi=300)
 colors = plt.cm.rainbow(np.linspace(0, 1, len(org_keys)))
@@ -64,7 +61,6 @@ for i, hour in enumerate(range(vals.shape[1])):
 		avg = np.nanmean(vals[:,hour,freq])
 		avgs.append(avg)
 	plt.plot(pn,avgs, color=colors[i],label=middle_times[i].strftime('%H %M') + r'$\pm$45m' + ' ' + station)
-	# plt.xlim([0,100])
 	plt.xlim([0.02008032,10])
 	plt.xscale('log')
 plt.ylim([-140,-60])
@@ -76,4 +72,3 @@ if year1 == '2020':
 	plt.savefig('../Figures/' + station + '_Hourly_Avg_Covid.png',dpi=300, bbox_inches='tight')
 else:
 	plt.savefig('../Figures/' + station + '_Hourly_Avg.png',dpi=300, bbox_inches='tight')
-# plt.show()	
