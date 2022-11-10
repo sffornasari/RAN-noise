@@ -10,7 +10,7 @@ The script should be used in the following order:
 
 Figures in the paper are created with the following codes:
 
-Figure 2 - plot_numberofdays.py
+Figure 2 - plot_numberofdays.py \\
 Figure 3 - 
 Figure 4 - general.py
 Figure 5 - 
