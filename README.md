@@ -24,5 +24,9 @@ Figure 15 - car_sta.py \
 Figure S1 - all_periods_general.py \
 Figure S2 - covid_weekday_weekend_dif.py
 
+# To have a complete DBs folder, please use the following link:
+
+10.6084/m9.figshare.21533268
+
 # Join the public discussion
 Fornasari, S. F., Ertuncay, D., and Costa, G.: Seismic Background Noise Levels in Italian Strong Motion Network, Nat. Hazards Earth Syst. Sci. Discuss. [preprint], https://doi.org/10.5194/nhess-2022-258, in review, 2022.
