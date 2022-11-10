@@ -35,39 +35,29 @@ def draw_map(fig,ax,stname,stlos,stlas,data,vmin,vmax):
 
 
 # Opening Day JSON file
-f = open('../../DBs/JSON_Final/day_ext.json')
-# returns JSON object as 
-# a dictionary
+f = open('../DBs/JSON_Final/day_ext.json')
 day = json.load(f)
 
 # Opening Day Covid JSON file
-f = open('../../DBs/JSON_Final/day_ext_covid.json')
-# returns JSON object as 
-# a dictionary
+f = open('../DBs/JSON_Final/day_ext_covid.json')
 dayc = json.load(f)
 
 # Opening Night JSON file
-f = open('../../DBs/JSON_Final/night_ext.json')
-# returns JSON object as 
-# a dictionary
+f = open('../DBs/JSON_Final/night_ext.json')
 night = json.load(f)
 
 # Opening Night Covid JSON file
-f = open('../../DBs/JSON_Final/night_ext_covid.json')
-# returns JSON object as 
-# a dictionary
+f = open('../DBs/JSON_Final/night_ext_covid.json')
 nightc = json.load(f)
 
 # Read Station Info
-dpc_db = pd.read_csv('../../DBs/station_attributes.csv')
+dpc_db = pd.read_csv('../DBs/station_attributes.csv')
 
 # Define Figure
 # Create a Stamen terrain background instance.
 stamen_terrain = cimgt.Stamen('terrain-background')
-# fig,axs = plt.subplots(2,3, figsize=(16,10), facecolor='w', edgecolor='k',subplot_kw={'projection': stamen_terrain.crs}, gridspec_kw = {'wspace':0, 'hspace':0.1})
 fig,axs = plt.subplots(3,4, figsize=(16,10), facecolor='w', edgecolor='k',subplot_kw={'projection': stamen_terrain.crs}, gridspec_kw = {'wspace':0, 'hspace':0.1})
 axs = axs.ravel()
-# fig.delaxes(axs[-1]) #The indexing is zero-based here
 # Annotation
 annotations = list(string.ascii_lowercase)
 
@@ -149,4 +139,4 @@ for per_idx, period in enumerate(periods):
 
 
 axs[increment+1].text(0.30, -0.05, 'Red = Non Covid Noisier', transform=axs[increment+1].transAxes, size=8)
-plt.savefig('../../Figures/Dif_Day_Night2/201920222020/Median/coviddaynight.png',dpi=300, bbox_inches='tight')
+plt.savefig('../Figures/Figure 10.png',dpi=300, bbox_inches='tight')
