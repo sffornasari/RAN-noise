@@ -27,8 +27,7 @@ Figure S2 - plotting/covid_weekday_weekend_dif.py
 **N.B. The paths to the files must be checked and updated before running the scripts.**
 
 # To have a complete DBs folder, please use the following link:
-https://figshare.com/articles/dataset/RAN-noise/21533268 \
-doi:10.6084/m9.figshare.21533268
+doi: [10.6084/m9.figshare.21533268](https://doi.org/10.6084/m9.figshare.21533268)
 
 # Join the public discussion
 Fornasari, S. F., Ertuncay, D., and Costa, G.: Seismic Background Noise Levels in Italian Strong Motion Network, Nat. Hazards Earth Syst. Sci. Discuss. [preprint], https://doi.org/10.5194/nhess-2022-258, in review, 2022.
