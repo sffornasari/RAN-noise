@@ -37,13 +37,11 @@ def draw_map(fig,ax,stname,stlos,stlas,data,vmin,vmax):
 
 
 # Opening JSON file
-f = open('../../DBs/JSON_Final/yearly_median_all.json')
-# returns JSON object as 
-# a dictionary
+f = open('../DBs/JSON_Final/yearly_median_all.json')
 data = json.load(f)
 
 # Read Station Info
-dpc_db = pd.read_csv('../../DBs/station_attributes.csv')
+dpc_db = pd.read_csv('../DBs/station_attributes.csv')
 
 
 # Define Figure
@@ -51,7 +49,6 @@ dpc_db = pd.read_csv('../../DBs/station_attributes.csv')
 stamen_terrain = cimgt.Stamen('terrain-background')
 fig,axs = plt.subplots(3,3, figsize=(16, 16), facecolor='w', edgecolor='k',subplot_kw={'projection': stamen_terrain.crs}, gridspec_kw = {'wspace':0, 'hspace':0.1})
 axs = axs.ravel()
-# fig.delaxes(axs[-1]) #The indexing is zero-based here
 # Annotation
 annotations = list(string.ascii_lowercase)
 
@@ -82,12 +79,8 @@ for per_idx, (period, vmin, vmax) in enumerate(zip(periods,vmins,vmaxs)):
 		stnames.append(sta)
 		dif.append(val)
 
-	# #print(dif)
-	# dif = np.array(dif)
-	# abs_dif = np.absolute(dif)
-	# vmax = np.nanpercentile(abs_dif, 95)
 	fig, ax = draw_map(fig,axs[per_idx],stnames,stlos,stlas,dif,vmin,vmax)
 	axs[per_idx].text(-0.05, 1.02, annotations[per_idx] + ')', transform=axs[per_idx].transAxes, size=10)
 
 
-plt.savefig('../../Figures/General_Average2/general.png',dpi=300, bbox_inches='tight')
+plt.savefig('../Figures/Figure 4.png',dpi=300, bbox_inches='tight')
