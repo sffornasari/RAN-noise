@@ -35,13 +35,11 @@ def draw_map(fig,ax,stname,stlos,stlas,data,vmin,vmax):
 
 
 # Opening JSON file
-f = open('../../DBs/JSON_Final/wint_summ_ext.json')
-# returns JSON object as 
-# a dictionary
+f = open('../DBs/JSON_Final/wint_summ_ext.json')
 data = json.load(f)
 
 # Read Station Info
-dpc_db = pd.read_csv('../../DBs/station_attributes.csv')
+dpc_db = pd.read_csv('../DBs/station_attributes.csv')
 
 # Years
 year1 = '2019'
@@ -52,7 +50,6 @@ year2 = '2022'
 stamen_terrain = cimgt.Stamen('terrain-background')
 fig,axs = plt.subplots(2,2, figsize=(10, 10), facecolor='w', edgecolor='k',subplot_kw={'projection': stamen_terrain.crs}, gridspec_kw = {'wspace':0, 'hspace':0.1})
 axs = axs.ravel()
-# fig.delaxes(axs[-1]) #The indexing is zero-based here
 # Annotation
 annotations = list(string.ascii_lowercase)
 
@@ -79,4 +76,4 @@ for per_idx, period in enumerate(periods):
 
 
 axs[-1].text(0.55, -0.05, 'Red = Summer Noisier', transform=axs[per_idx].transAxes, size=8)
-plt.savefig('../../Figures/Season_20192/Median/summerwinter.png',dpi=300, bbox_inches='tight')
+plt.savefig('../Figures/Figure 8.png',dpi=300, bbox_inches='tight')
