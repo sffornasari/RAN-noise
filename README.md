@@ -1,5 +1,5 @@
-# RAN-noise
-Collection of scripts to evaluate the RAN noise levels.
+# Seismic Background Noise Levels in Italian Strong Motion Network
+A collection of scripts to evaluate the RAN noise levels as in[Seismic Background Noise Levels in Italian Strong Motion Network](https://doi.org/10.5194/nhess-2022-258)
 
 The script should be used in the following order:
 1. preprocessing/compute_full_psd.py
@@ -7,8 +7,7 @@ The script should be used in the following order:
 3. preprocessing/compute_psd_P_timeseries.py
 4. analysis/compute_jsons.py
 
-Figures in the paper are created with the following codes:
-
+The figures in the paper are created with the following codes:
 Figure 1 - plotting/noise_sources.py \
 Figure 2 - plotting/plot_numberofdays.py \
 Figure 3 - plotting/PSD_ts_plot.py
