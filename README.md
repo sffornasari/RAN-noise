@@ -1,5 +1,5 @@
 # Seismic Background Noise Levels in Italian Strong Motion Network
-A collection of scripts to evaluate the RAN noise levels as in[Seismic Background Noise Levels in Italian Strong Motion Network](https://doi.org/10.5194/nhess-2022-258)
+A collection of scripts to evaluate the RAN noise levels as in [Seismic Background Noise Levels in Italian Strong Motion Network](https://doi.org/10.5194/nhess-2022-258)
 
 ## Data processing
 /preprocessing, /analysis, and /plotting folders contain the script used to produce the results discussed in the paper.
