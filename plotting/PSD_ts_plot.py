@@ -18,7 +18,7 @@ fig = plt.figure(figsize=(30, 15))
 outer = gridspec.GridSpec(3, 2, wspace=0.1, hspace=0.4)
 for i in range(6):
     inner = gridspec.GridSpecFromSubplotSpec(1, 3,
-                    subplot_spec=outer[i], wspace=0.1, hspace=0.1, width_ratios= [365, 76, 125])
+                    subplot_spec=outer[i], wspace=0.1, hspace=0.1, width_ratios= [305, 66, 175])#[365, 76, 125]
     P = Ps[i]
     if singleyear == False:
         times = ['0000.0',
@@ -133,6 +133,7 @@ for i in range(6):
         
         pcms = {}
         gridcell = []
+        mpl.rcParams.update({'font.size': 13})
         for j, year in enumerate([2019, 2020, 2022]):
             ax = plt.Subplot(fig, inner[j])
             pcms[year] = ax.pcolormesh(multi_ext_ts[year], vmin=vmin, vmax=vmax, cmap='jet')
@@ -141,8 +142,14 @@ for i in range(6):
             ax.set_xticks(xticks[year])
             ax.set_xticklabels([f'{m[:3]}.' if len(m)>4 else m for m in xticklabels[year]], ha='left', rotation=0)
             if j == 0:
-                ax.set_yticks(np.arange(0.5, len(keys)+0.5, 1))
-                ax.set_yticklabels(keys)
+                # ax.set_yticks(np.arange(0.5, len(keys)+0.5, 1))
+                ax.set_yticks(np.arange(0.5, len(keys)+0.5, 2))
+                ax.set_yticklabels(keys[::2])
+            elif j == 2:
+              ax.yaxis.tick_right()
+              ax.yaxis.set_label_position("right")
+              ax.set_yticks(np.arange(1.5, len(keys)+0.5, 2))
+              ax.set_yticklabels(keys[1::2])
             else:
                 ax.set_yticks([])
                 ax.set_yticklabels([])
@@ -155,12 +162,14 @@ for i in range(6):
         inv = fig.transFigure.inverted()
         xtext, ytext = inv.transform((xtext, ytext))
         plt.figtext(xtext+2*(i%2)/5, ytext,f"Period = {Ptitle[i]} s", va="center", ha="right", size=15, weight='bold')
-        cbar = fig.colorbar(pcms[2020], ax=ax, orientation='vertical', pad=0.1, aspect=25, extend='both', ticks=np.linspace(int(np.round(vmin)), int(np.round(vmax)), 5, dtype=int))
+        cbar = fig.colorbar(pcms[2020], ax=ax, orientation='vertical', pad=0.30, aspect=25, extend='both', ticks=np.linspace(int(np.round(vmin+0.5)), int(np.round(vmax-0.5)), 5, dtype=int))
         cbar.set_label('Noise Power (dB)')
         cbar.ax.tick_params(rotation=90)
 if high_res == True:
-    plt.savefig(f'/content/drive/MyDrive/oto_P_ts/mega_fig_selected.png', dpi=300, bbox_inches='tight',pad_inches=0.1)
+    plt.savefig(f'yearlong.png', dpi=300, bbox_inches='tight',pad_inches=0.1)
 elif high_res == False:
-    plt.savefig(f'/content/drive/MyDrive/oto_P_ts/mega_fig_selected_l.png', dpi=100, bbox_inches='tight',pad_inches=0.1)
+    #plt.savefig(f'/content/drive/MyDrive/oto_P_ts/mega_fig_{P:.2e}s_multi_l.png', dpi=100, bbox_inches='tight',pad_inches=0.1)
+    # plt.savefig(f'/content/drive/MyDrive/oto_P_ts/mega_fig_selected_l.png', dpi=100, bbox_inches='tight',pad_inches=0.1)
+    pass
 
 plt.show()
