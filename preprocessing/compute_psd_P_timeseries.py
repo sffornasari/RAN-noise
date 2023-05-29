@@ -23,7 +23,7 @@ def sta_ts(psds, P_ref):
             ind_ref = np.abs(npz['Pn']-P_ref).argmin()
             for h in npz.files[1:]: 
                 hpsd = npz[h]
-                ts.append(hpsd[-ind_ref])
+                ts.append(hpsd[ind_ref])
                 h, m = re.split(r'[_]', h)
                 #t.append(t_base + datetime.timedelta(hours=int(h), minutes=int(m)))
                 t.append(int(f'{int(y)}{int(jd):03d}{int(h):02d}{int(m):02d}'))
