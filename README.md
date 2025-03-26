@@ -1,5 +1,5 @@
 # Seismic Background Noise Levels in Italian Strong Motion Network
-A collection of scripts to evaluate the RAN noise levels as in [Seismic Background Noise Levels in Italian Strong Motion Network](https://doi.org/10.5194/nhess-2022-258)
+A collection of scripts to evaluate the RAN noise levels as in [Seismic Background Noise Levels in Italian Strong Motion Network](https://doi.org/10.5194/nhess-23-3219-2023)
 
 ## Data processing
 /preprocessing, /analysis, and /plotting folders contain the script used to produce the results discussed in the paper.
@@ -34,5 +34,5 @@ The maps presented in the paper are available in an html interactive format in t
 ## The complete DBs folder are available at the following link:
 doi: [10.6084/m9.figshare.21533268](https://doi.org/10.6084/m9.figshare.21533268)
 
-## Join the public discussion
-Fornasari, S. F., Ertuncay, D., and Costa, G.: Seismic Background Noise Levels in Italian Strong Motion Network, Nat. Hazards Earth Syst. Sci. Discuss. [preprint], https://doi.org/10.5194/nhess-2022-258, in review, 2022.
+## Paper's citation
+Fornasari, S. F., Ertuncay, D., & Costa, G. (2023). Seismic Background Noise Levels in the Italian Strong-Motion Network. Natural Hazards and Earth System Sciences, 23(10), 3219–3234. [doi:10.5194/nhess-23-3219-2023](https://doi.org/10.5194/nhess-23-3219-2023)
